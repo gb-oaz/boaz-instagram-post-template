@@ -797,185 +797,245 @@ const LANGS = [
 function highlight(code, lang) {
   const e = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const w = (cls, s) => `<span class="${cls}">${s}</span>`;
-  let c = e(code);
 
+  // Placeholders: \x01 + UPPERCASE LETTERS only — never matched by \d+ or keyword regexes
+  function makeId(n) {
+    let s = '', m = n + 1;
+    while (m) { m--; s = String.fromCharCode(65 + (m % 26)) + s; m = Math.floor(m / 26); }
+    return '\x01' + s + '\x01';
+  }
+  function tok(src) {
+    const tk = [], rxs = Array.from(arguments).slice(1);
+    let r = src;
+    for (const rx of rxs) {
+      r = r.replace(rx, m => { const id = makeId(tk.length); tk.push(m); return id; });
+    }
+    return [r, tk];
+  }
+  function rst(s, tk) {
+    return s.replace(/\x01([A-Z]+)\x01/g, (_, key) => {
+      let n = 0;
+      for (let i = 0; i < key.length; i++) n = n * 26 + key.charCodeAt(i) - 65;
+      return tk[n] !== undefined ? tk[n] : '';
+    });
+  }
+  // Classify a tokenized raw match to its colored span
+  function cls_comment(m) { return w('c', m); }
+  function cls_str(m)     { return w('s', m); }
+  function cls_num(m)     { return w('n', m); }
+  function cls_dir(m)     { return w('d', m); }
+
+  let c = e(code);
   if (lang === 'plain') return c;
 
   if (lang === 'python') {
     const KW = /\b(def|class|import|from|as|return|if|elif|else|for|while|in|not|and|or|True|False|None|with|try|except|finally|raise|pass|break|continue|lambda|yield|async|await|global|nonlocal|del|is)\b/g;
     const BI = /\b(print|len|range|type|int|str|float|list|dict|set|tuple|open|super|self|__init__|__str__|__repr__|enumerate|zip|map|filter|sorted|reversed|any|all|min|max|sum)\b/g;
-    return c
-      .replace(/#[^\n]*/g, m => w('c', m))
-      .replace(/("""[\s\S]*?"""|'''[\s\S]*?''')/g, m => w('s', m))
-      .replace(/"[^"\\n]*"|'[^'\\n]*'/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(/\bdef\s+(\w+)/g, (_, fn) => `${w('k','def')} ${w('f',fn)}`)
-      .replace(/\bclass\s+(\w+)/g, (_, cl) => `${w('k','class')} ${w('t',cl)}`)
-      .replace(KW, m => w('k', m))
-      .replace(BI, m => w('f', m))
-      .replace(/@\w+/g, m => w('d', m));
+    const [r1, tk] = tok(c,
+      /#[^\n]*/g,
+      /"""[\s\S]*?"""|'''[\s\S]*?'''/g,
+      /"[^"\n]*"|'[^'\n]*'/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : m.startsWith('#') ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/\bdef\s+(\w+)/g,(_,fn)=>`${w('k','def')} ${w('f',fn)}`)
+      .replace(/\bclass\s+(\w+)/g,(_,cl)=>`${w('k','class')} ${w('t',cl)}`)
+      .replace(KW,m=>w('k',m))
+      .replace(BI,m=>w('f',m))
+      .replace(/@\w+/g,m=>w('d',m)), tf);
   }
 
   if (lang === 'java') {
     const KW = /\b(public|private|protected|static|final|void|class|interface|enum|extends|implements|new|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|finally|throw|throws|import|package|this|super|null|true|false|abstract|synchronized|volatile|transient|native|instanceof)\b/g;
-    const TY = /\b(int|long|short|byte|float|double|boolean|char|String|Integer|Long|Float|Double|Boolean|Char|Object|List|ArrayList|Map|HashMap|Set|HashSet|Optional|void|var)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/"[^"\\]*"|"[^"]*"/g, m => w('s', m))
-      .replace(/'[^'\\]'|'\\.'|'\\''/g, m => w('s', m))
-      .replace(/\b\d+[LlFfDd]?\b/g, m => w('n', m))
-      .replace(/@\w+/g, m => w('at', m))
-      .replace(KW, m => w('k', m))
-      .replace(TY, m => w('t', m))
-      .replace(/\b([A-Z][a-zA-Z0-9_]*)\s*(?=\()/g, m => w('f', m))
-      .replace(/\b([a-z][a-zA-Z0-9_]*)\s*(?=\()/g, m => w('f', m));
+    const TY = /\b(int|long|short|byte|float|double|boolean|char|String|Integer|Long|Float|Double|Boolean|Character|Object|List|ArrayList|Map|HashMap|Set|HashSet|Optional|var)\b/g;
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /"(?:[^"\\]|\\.)*"/g,
+      /'(?:[^'\\]|\\.)*'/g,
+      /\b\d+\.?\d*[LlFfDd]?\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/@\w+/g,m=>w('at',m))
+      .replace(KW,m=>w('k',m))
+      .replace(TY,m=>w('t',m))
+      .replace(/\b([A-Z][a-zA-Z0-9_]*)\s*(?=\()/g,m=>w('f',m))
+      .replace(/\b([a-z][a-zA-Z0-9_]*)\s*(?=\()/g,m=>w('f',m)), tf);
   }
 
   if (lang === 'kotlin') {
-    const KW = /\b(fun|class|object|interface|val|var|if|else|when|for|while|do|return|import|package|this|super|null|true|false|override|open|abstract|sealed|data|inner|companion|suspend|coroutine|by|in|is|as|try|catch|finally|throw|init|constructor|get|set|lateinit|lazy|const|private|public|protected|internal|final)\b/g;
+    const KW = /\b(fun|class|object|interface|val|var|if|else|when|for|while|do|return|import|package|this|super|null|true|false|override|open|abstract|sealed|data|inner|companion|suspend|by|in|is|as|try|catch|finally|throw|init|constructor|get|set|lateinit|const|private|public|protected|internal|final)\b/g;
     const TY = /\b(Int|Long|Short|Byte|Float|Double|Boolean|Char|String|Unit|Any|Nothing|List|MutableList|Map|HashMap|Set|HashSet|Pair|Triple)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/"[^"]*"/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*[LfFu]?\b/g, m => w('n', m))
-      .replace(/\bfun\s+(\w+)/g, (_, fn) => `${w('k','fun')} ${w('f',fn)}`)
-      .replace(/\bclass\s+(\w+)/g, (_, cl) => `${w('k','class')} ${w('t',cl)}`)
-      .replace(KW, m => w('k', m))
-      .replace(TY, m => w('t', m));
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /"[^"]*"/g,
+      /\b\d+\.?\d*[LfFu]?\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/\bfun\s+(\w+)/g,(_,fn)=>`${w('k','fun')} ${w('f',fn)}`)
+      .replace(/\bclass\s+(\w+)/g,(_,cl)=>`${w('k','class')} ${w('t',cl)}`)
+      .replace(KW,m=>w('k',m))
+      .replace(TY,m=>w('t',m)), tf);
   }
 
   if (lang === 'js' || lang === 'ts') {
     const KW = /\b(const|let|var|function|return|if|else|for|while|class|import|export|from|default|new|this|typeof|instanceof|void|null|undefined|true|false|async|await|try|catch|finally|throw|switch|case|break|continue|of|in|extends|super|static|get|set|delete|do|yield|require)\b/g;
     const TY = lang === 'ts' ? /\b(interface|type|enum|implements|declare|namespace|readonly|abstract|public|private|protected|keyof|infer|never|unknown|any|string|number|boolean|object|symbol)\b/g : null;
-    let r = c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/`[^`]*`/g, m => w('s', m))
-      .replace(/"[^"\\n]*"|'[^'\\n]*'/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(KW, m => w('k', m))
-      .replace(/\b([a-zA-Z_$][\w$]*)\s*(?=\s*\()/g, m => w('f', m));
-    if (TY) r = r.replace(TY, m => w('t', m));
-    return r;
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /`[^`]*`/g,
+      /"[^"\n]*"|'[^'\n]*'/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    let r2 = r1.replace(KW,m=>w('k',m)).replace(/\b([a-zA-Z_$][\w$]*)\s*(?=\s*\()/g,m=>w('f',m));
+    if (TY) r2 = r2.replace(TY, m=>w('t',m));
+    return rst(r2, tf);
   }
 
   if (lang === 'csharp') {
     const KW = /\b(public|private|protected|internal|static|readonly|const|void|class|interface|enum|struct|record|new|return|if|else|for|foreach|while|do|switch|case|default|break|continue|try|catch|finally|throw|using|namespace|this|base|null|true|false|abstract|virtual|override|sealed|async|await|var|get|set|init)\b/g;
     const TY = /\b(int|long|short|byte|float|double|bool|char|string|object|decimal|uint|ulong|ushort|sbyte|String|List|Dictionary|IEnumerable|Task|Action|Func|Type)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/"[^"\\n]*"/g, m => w('s', m))
-      .replace(/\[[\w,\s()."]+\]/g, m => w('at', m))
-      .replace(/\b\d+\.?\d*[mMfFlLuU]?\b/g, m => w('n', m))
-      .replace(KW, m => w('k', m))
-      .replace(TY, m => w('t', m))
-      .replace(/\b([A-Z][a-zA-Z0-9_]*)\s*(?=\s*[(<])/g, m => w('f', m));
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /"[^"\n]*"/g,
+      /\b\d+\.?\d*[mMfFlLuU]?\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(KW,m=>w('k',m))
+      .replace(TY,m=>w('t',m))
+      .replace(/\b([A-Z][a-zA-Z0-9_]*)\s*(?=\s*[(<])/g,m=>w('f',m)), tf);
   }
 
   if (lang === 'cpp') {
-    const KW = /\b(int|long|short|unsigned|signed|void|bool|char|float|double|auto|const|constexpr|static|extern|register|volatile|class|struct|union|enum|typedef|namespace|template|typename|public|private|protected|virtual|override|final|new|delete|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|throw|include|define|ifdef|ifndef|endif|using)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/#[^\n]*/g, m => w('d', m))
-      .replace(/"[^"\\n]*"|'[^'\\n]*'/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*[uUlLfF]?\b/g, m => w('n', m))
-      .replace(KW, m => w('k', m))
-      .replace(/\b([A-Z][a-zA-Z0-9_]*)\b/g, m => w('t', m));
+    const KW = /\b(int|long|short|unsigned|signed|void|bool|char|float|double|auto|const|constexpr|static|extern|register|volatile|class|struct|union|enum|typedef|namespace|template|typename|public|private|protected|virtual|override|final|new|delete|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|throw|using)\b/g;
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /#[^\n]*/g,
+      /"[^"\n]*"|'[^'\n]*'/g,
+      /\b\d+\.?\d*[uUlLfF]?\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : m.startsWith('#') ? cls_dir(m) : cls_str(m));
+    return rst(r1
+      .replace(KW,m=>w('k',m))
+      .replace(/\b([A-Z][a-zA-Z0-9_]*)\b/g,m=>w('t',m)), tf);
   }
 
   if (lang === 'go') {
-    const KW = /\b(func|package|import|var|const|type|struct|interface|map|chan|go|defer|return|if|else|for|range|switch|case|default|break|continue|select|nil|true|false|make|new|append|len|cap|close|delete|copy|goroutine)\b/g;
+    const KW = /\b(func|package|import|var|const|type|struct|interface|map|chan|go|defer|return|if|else|for|range|switch|case|default|break|continue|select|nil|true|false|make|new|append|len|cap|close|delete|copy)\b/g;
     const TY = /\b(int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|complex64|complex128|string|bool|byte|rune|error|any)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/`[^`]*`|"[^"\\n]*"/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(/\bfunc\s+(\w+)/g, (_, fn) => `${w('k','func')} ${w('f',fn)}`)
-      .replace(KW, m => w('k', m))
-      .replace(TY, m => w('t', m))
-      .replace(/\b([A-Z][a-zA-Z0-9_]*)\b/g, m => w('t', m));
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /`[^`]*`/g,
+      /"[^"\n]*"/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/\bfunc\s+(\w+)/g,(_,fn)=>`${w('k','func')} ${w('f',fn)}`)
+      .replace(KW,m=>w('k',m))
+      .replace(TY,m=>w('t',m)), tf);
   }
 
   if (lang === 'rust') {
-    const KW = /\b(fn|let|mut|const|static|struct|enum|impl|trait|for|in|if|else|while|loop|match|return|pub|use|mod|crate|super|self|type|where|async|await|move|dyn|ref|unsafe|extern|break|continue|yield)\b/g;
+    const KW = /\b(fn|let|mut|const|static|struct|enum|impl|trait|for|in|if|else|while|loop|match|return|pub|use|mod|crate|super|self|type|where|async|await|move|dyn|ref|unsafe|extern|break|continue)\b/g;
     const TY = /\b(i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|f32|f64|bool|char|str|String|Vec|HashMap|HashSet|Option|Result|Box|Rc|Arc|RefCell|usize|isize)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/"[^"\\n]*"/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(/#\[[\s\S]*?\]/g, m => w('at', m))
-      .replace(/\bfn\s+(\w+)/g, (_, fn) => `${w('k','fn')} ${w('f',fn)}`)
-      .replace(KW, m => w('k', m))
-      .replace(TY, m => w('t', m));
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /"[^"\n]*"/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/#\[[\s\S]*?\]/g,m=>w('at',m))
+      .replace(/\bfn\s+(\w+)/g,(_,fn)=>`${w('k','fn')} ${w('f',fn)}`)
+      .replace(KW,m=>w('k',m))
+      .replace(TY,m=>w('t',m)), tf);
   }
 
   if (lang === 'php') {
     const KW = /\b(function|class|interface|trait|abstract|final|public|private|protected|static|new|return|if|elseif|else|foreach|for|while|do|switch|case|default|break|continue|try|catch|finally|throw|namespace|use|require|require_once|include|include_once|echo|print|null|true|false)\b/g;
-    return c
-      .replace(/#[^\n]*|\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/"[^"\\n]*"|'[^'\\n]*'/g, m => w('s', m))
-      .replace(/\$\w+/g, m => w('v', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(KW, m => w('k', m));
+    const [r1, tk] = tok(c,
+      /#[^\n]*|\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /"[^"\n]*"|'[^'\n]*'/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('#') || m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/\$\w+/g,m=>w('v',m))
+      .replace(KW,m=>w('k',m)), tf);
   }
 
   if (lang === 'ruby') {
     const KW = /\b(def|class|module|end|if|elsif|else|unless|case|when|then|while|until|for|do|return|yield|begin|rescue|ensure|raise|include|extend|require|require_relative|attr_reader|attr_writer|attr_accessor|nil|true|false|self|super|new|and|or|not|in|is_a)\b/g;
-    return c
-      .replace(/#[^\n]*/g, m => w('c', m))
-      .replace(/"[^"\\n]*"|'[^'\\n]*'/g, m => w('s', m))
-      .replace(/:[a-z_]\w*/g, m => w('d', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(KW, m => w('k', m));
+    const [r1, tk] = tok(c,
+      /#[^\n]*/g,
+      /"[^"\n]*"|'[^'\n]*'/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : m.startsWith('#') ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/:[a-z_]\w*/g,m=>w('d',m))
+      .replace(KW,m=>w('k',m)), tf);
   }
 
   if (lang === 'swift') {
     const KW = /\b(func|var|let|class|struct|enum|protocol|extension|import|return|if|else|guard|switch|case|for|while|do|try|catch|throw|defer|init|deinit|get|set|willSet|didSet|override|mutating|required|public|private|internal|fileprivate|open|static|final|lazy|weak|unowned|nil|true|false|self|super|as|is|in)\b/g;
     const TY = /\b(Int|Float|Double|Bool|String|Character|Array|Dictionary|Set|Optional|Void|Any|AnyObject|Never|Error)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/"[^"\\n]*"/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(/@\w+/g, m => w('at', m))
-      .replace(KW, m => w('k', m))
-      .replace(TY, m => w('t', m));
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /"[^"\n]*"/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1
+      .replace(/@\w+/g,m=>w('at',m))
+      .replace(KW,m=>w('k',m))
+      .replace(TY,m=>w('t',m)), tf);
   }
 
   if (lang === 'sql') {
     const KW = /\b(SELECT|FROM|WHERE|INSERT|INTO|UPDATE|DELETE|CREATE|TABLE|DROP|ALTER|JOIN|LEFT|RIGHT|INNER|FULL|OUTER|ON|AND|OR|NOT|NULL|AS|DISTINCT|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|SET|VALUES|INDEX|PRIMARY|KEY|FOREIGN|REFERENCES|CONSTRAINT|DEFAULT|UNIQUE|CASCADE|TRUNCATE|VIEW|PROCEDURE|FUNCTION|TRIGGER|BEGIN|END|COMMIT|ROLLBACK|TRANSACTION|IF|EXISTS|ADD|COLUMN|RENAME|MODIFY|UNION|ALL|INTERSECT|EXCEPT|WITH|RECURSIVE)\b/gi;
     const TY = /\b(INT|INTEGER|BIGINT|SMALLINT|TINYINT|DECIMAL|NUMERIC|FLOAT|DOUBLE|REAL|CHAR|VARCHAR|TEXT|BLOB|DATE|TIME|DATETIME|TIMESTAMP|BOOLEAN|BOOL|SERIAL|UUID|JSON|JSONB|ARRAY)\b/gi;
-    return c
-      .replace(/--[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/'[^']*'/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(KW, m => w('k', m))
-      .replace(TY, m => w('t', m));
+    const [r1, tk] = tok(c,
+      /--[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /'[^']*'/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('--') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1.replace(KW,m=>w('k',m)).replace(TY,m=>w('t',m)), tf);
   }
 
   if (lang === 'html') {
-    return c
-      .replace(/(&lt;!--[\s\S]*?--&gt;)/g, m => w('c', m))
-      .replace(/(&lt;\/?)([\w-]+)/g, (_, lt, tag) => lt + w('k', tag))
-      .replace(/([\w-]+)(=)("([^"]*)")/g, (_, attr, eq, val) => w('v', attr) + eq + w('s', val))
-      .replace(/(&gt;)/g, m => w('p', m))
-      .replace(/(&lt;)/g, m => w('p', m));
+    const [r1, tk] = tok(c, /&lt;!--[\s\S]*?--&gt;/g);
+    const tf = tk.map(m => w('c',m));
+    return rst(r1
+      .replace(/(&lt;\/?)([\w-]+)/g,(_,lt,tag)=>lt+w('k',tag))
+      .replace(/([\w-]+)(=)("([^"]*?)")/g,(_,a,eq,val)=>w('v',a)+eq+w('s',val))
+      .replace(/(&gt;)/g,m=>w('p',m))
+      .replace(/(&lt;)/g,m=>w('p',m)), tf);
   }
 
   if (lang === 'css') {
-    return c
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/(@[\w-]+)/g, m => w('d', m))
-      .replace(/([\w-]+)\s*:\s*([^;{}]+)(;)/g, (_, prop, val, sc) => w('v', prop) + ': ' + w('s', val) + sc)
-      .replace(/([.#:\w-]+(?:\s*[.#:\w-]+)*)\s*\{/g, (_, sel) => w('f', sel) + ' {');
+    const [r1, tk] = tok(c, /\/\*[\s\S]*?\*\//g);
+    const tf = tk.map(m => w('c',m));
+    return rst(r1
+      .replace(/(@[\w-]+)/g,m=>w('d',m))
+      .replace(/([\w-]+)\s*:\s*([^;{}]+)(;)/g,(_,p,v,sc)=>w('v',p)+': '+w('s',v)+sc)
+      .replace(/([.#:\w-]+(?:\s*[.#:\w-]+)*)\s*\{/g,(_,sel)=>w('f',sel)+' {'), tf);
   }
 
   if (lang === 'shell') {
@@ -1004,56 +1064,54 @@ function highlight(code, lang) {
       const m = line.match(/^(\s*)([\w\-\.]+)(:)(\s*)(.*)/);
       if (m) {
         const val = m[5].trim();
-        const hv = /^(true|false|yes|no|null|~)$/i.test(val) ? w('k', val) :
-                   /^\d/.test(val) ? w('n', val) :
-                   val.startsWith('"') || val.startsWith("'") ? w('s', val) :
-                   w('s', val);
-        return m[1] + w('v', m[2]) + w('p', m[3]) + m[4] + hv;
+        const hv = /^(true|false|yes|no|null|~)$/i.test(val) ? w('k',val) : /^\d/.test(val) ? w('n',val) : w('s',val);
+        return m[1]+w('v',m[2])+w('p',m[3])+m[4]+hv;
       }
-      if (/^\s*-\s/.test(line)) return line.replace(/^(\s*-\s)(.*)/, (_, d, v) => d + w('s', v));
+      if (/^\s*-\s/.test(line)) return line.replace(/^(\s*-\s)(.*)/,(_,d,v)=>d+w('s',v));
       return line;
     }).join('\n');
   }
 
   if (lang === 'json') {
     return c
-      .replace(/"([^"]+)"(\s*:)/g, w('v', '"$1"') + '$2')
-      .replace(/:\s*"([^"]*)"/g, ': ' + w('s', '"$1"'))
-      .replace(/:\s*(\d+\.?\d*)/g, ': ' + w('n', '$1'))
-      .replace(/:\s*(true|false|null)/g, ': ' + w('k', '$1'));
+      .replace(/"([^"]+)"\s*:/g, (_, k) => `${w('v','"'+k+'"')}:`)
+      .replace(/:\s*"([^"]*)"/g, (_, v) => `: ${w('s','"'+v+'"')}`)
+      .replace(/:\s*(\d+\.?\d*)/g, (_, n) => `: ${w('n',n)}`)
+      .replace(/:\s*(true|false|null)/g, (_, b) => `: ${w('k',b)}`);
   }
 
   if (lang === 'xml') {
-    return c
-      .replace(/(&lt;!--[\s\S]*?--&gt;)/g, m => w('c', m))
-      .replace(/(&lt;\/?)([\w:-]+)/g, (_, lt, tag) => lt + w('k', tag))
-      .replace(/([\w:-]+)(=)("([^"]*)")/g, (_, attr, eq, val) => w('v', attr) + eq + w('s', val));
+    const [r1, tk] = tok(c, /&lt;!--[\s\S]*?--&gt;/g);
+    const tf = tk.map(m => w('c',m));
+    return rst(r1
+      .replace(/(&lt;\/?)([\w:-]+)/g,(_,lt,tag)=>lt+w('k',tag))
+      .replace(/([\w:-]+)(=)("([^"]*?)")/g,(_,a,eq,val)=>w('v',a)+eq+w('s',val)), tf);
   }
 
   if (lang === 'docker') {
     const INST = /^(FROM|RUN|CMD|LABEL|EXPOSE|ENV|ADD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ARG|ONBUILD|STOPSIGNAL|HEALTHCHECK|SHELL)\b/gm;
-    return c
-      .replace(/#[^\n]*/g, m => w('c', m))
-      .replace(INST, m => w('k', m))
-      .replace(/"[^"\\n]*"/g, m => w('s', m));
+    const [r1, tk] = tok(c, /#[^\n]*/g, /"[^"\n]*"/g);
+    const tf = tk.map(m => m.startsWith('#') ? cls_comment(m) : cls_str(m));
+    return rst(r1.replace(INST,m=>w('k',m)), tf);
   }
 
   if (lang === 'nginx') {
     const KW = /\b(server|location|upstream|http|events|worker_processes|listen|server_name|root|index|proxy_pass|proxy_set_header|include|access_log|error_log|gzip|ssl_certificate|return|rewrite|try_files|add_header)\b/g;
-    return c
-      .replace(/#[^\n]*/g, m => w('c', m))
-      .replace(KW, m => w('k', m))
-      .replace(/"[^"\\n]*"/g, m => w('s', m));
+    const [r1, tk] = tok(c, /#[^\n]*/g, /"[^"\n]*"/g);
+    const tf = tk.map(m => m.startsWith('#') ? cls_comment(m) : cls_str(m));
+    return rst(r1.replace(KW,m=>w('k',m)), tf);
   }
 
   if (lang === 'gradle') {
     const KW = /\b(plugins|dependencies|implementation|testImplementation|compileOnly|runtimeOnly|apply|plugin|repositories|mavenCentral|google|jcenter|task|project|configurations|buildscript|classpath|subprojects|allprojects|sourceCompatibility|targetCompatibility|group|version|def|if|else|for|while|return)\b/g;
-    return c
-      .replace(/\/\/[^\n]*/g, m => w('c', m))
-      .replace(/\/\*[\s\S]*?\*\//g, m => w('c', m))
-      .replace(/"[^"\\n]*"|'[^'\\n]*'/g, m => w('s', m))
-      .replace(/\b\d+\.?\d*\b/g, m => w('n', m))
-      .replace(KW, m => w('k', m));
+    const [r1, tk] = tok(c,
+      /\/\/[^\n]*/g,
+      /\/\*[\s\S]*?\*\//g,
+      /"[^"\n]*"|'[^'\n]*'/g,
+      /\b\d+\.?\d*\b/g
+    );
+    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    return rst(r1.replace(KW,m=>w('k',m)), tf);
   }
 
   return c; // plain fallback
