@@ -271,8 +271,13 @@ body.layout-h .slide{transform-origin:top center;}
 
 .snum{text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.06em;}
 .ssep{width:1px;height:22px;background:linear-gradient(to bottom,transparent,var(--border),transparent);}
-.xhint{font-size:12px;color:var(--muted);text-align:center;padding:12px 20px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;max-width:var(--slide-size);line-height:1.6;margin-top:20px;}
+.xhint{font-size:12px;color:var(--muted);text-align:center;padding:14px 20px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;width:100%;max-width:var(--slide-size);line-height:1.6;margin-top:20px;margin-left:auto;margin-right:auto;display:flex;flex-direction:column;align-items:center;gap:12px;}
 .xhint strong{color:var(--accent);}
+.xhint-text{text-align:center;}
+.btn-export{cursor:pointer;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;background:var(--accent);color:#0A0A0F;display:inline-flex;align-items:center;gap:7px;transition:all .2s;letter-spacing:.02em;}
+.btn-export:hover{filter:brightness(1.12);transform:translateY(-1px);}
+.btn-export:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none;}
+.export-progress{font-size:11px;color:var(--accent);font-family:'Space Mono',monospace;display:none;}
 
 /* TYPOGRAPHY PICKER */
 .typo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:7px;}
@@ -329,6 +334,7 @@ body.layout-h .slide{transform-origin:top center;}
 .icon-shape-opt:hover{border-color:rgba(255,255,255,.2);}
 .icon-shape-opt.active{border-color:var(--accent)!important;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -542,7 +548,11 @@ body.layout-h .slide{transform-origin:top center;}
     <div id="slideScale" style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace"></div>
   </div>
   <div class="slides-wrapper" id="slidesWrapper"></div>
-  <div class="xhint">💡 Para exportar: <strong>Ctrl+P → Salvar como PDF</strong> ou screenshot de cada slide (600×600px — padrão quadrado Instagram).</div>
+  <div class="xhint" id="exportHint">
+    <div class="xhint-text">💡 Cada slide é exportado como <strong>PNG 600×600px</strong> — pronto para o feed do Instagram.</div>
+    <button class="btn-export" id="btnExport" onclick="exportAllSlides()">⬇ Baixar todos os slides (PNG)</button>
+    <div class="export-progress" id="exportProgress"></div>
+  </div>
 </div>
 </div><!-- /preview-col -->
 
@@ -2621,6 +2631,68 @@ function updateAcSummary(id) {
   if (id === 'conteudo') {
     el.textContent = `${slides.length} slide${slides.length!==1?'s':''}`;
   }
+}
+
+/* ══ EXPORT PNG ══ */
+async function exportAllSlides() {
+  const btn      = document.getElementById('btnExport');
+  const progress = document.getElementById('exportProgress');
+  const slideEls = Array.from(document.querySelectorAll('#slidesWrapper .slide'));
+  if (!slideEls.length) { alert('Gere os slides primeiro clicando em ▶ Gerar Slides.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Exportando…';
+  progress.style.display = 'block';
+
+  const topic = (document.getElementById('postTopic')?.value || 'slide').trim().replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const total = slideEls.length;
+  // scale=2 → 1200×1200px output (Instagram aceita até 1080×1080, mantém qualidade)
+  const EXPORT_SCALE = 2;
+  const SLIDE_SIZE   = 600;
+
+  for (let i = 0; i < total; i++) {
+    const el = slideEls[i];
+    progress.textContent = `Exportando slide ${i + 1} de ${total}…`;
+
+    // Neutraliza transform de escala e força dimensões nativas
+    const origTransform = el.style.transform;
+    const origWidth     = el.style.width;
+    const origHeight    = el.style.height;
+    el.style.transform  = 'none';
+    el.style.width      = SLIDE_SIZE + 'px';
+    el.style.height     = SLIDE_SIZE + 'px';
+
+    try {
+      const canvas = await html2canvas(el, {
+        scale: EXPORT_SCALE,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        width: SLIDE_SIZE,
+        height: SLIDE_SIZE,
+        logging: false
+      });
+
+      const link    = document.createElement('a');
+      link.download = `${topic}_slide_${String(i + 1).padStart(2, '0')}.png`;
+      link.href     = canvas.toDataURL('image/png');
+      link.click();
+    } catch(e) {
+      console.error('Erro no slide', i + 1, e);
+    }
+
+    el.style.transform = origTransform;
+    el.style.width     = origWidth;
+    el.style.height    = origHeight;
+
+    // Pausa entre downloads para o browser não bloquear
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  progress.textContent = `✅ ${total} slide${total > 1 ? 's exportados' : ' exportado'}!`;
+  btn.disabled    = false;
+  btn.textContent = '⬇ Baixar todos os slides (PNG)';
+  setTimeout(() => { progress.style.display = 'none'; }, 4000);
 }
 
 /* ══ INIT ══ */

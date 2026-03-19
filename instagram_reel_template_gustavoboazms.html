@@ -147,8 +147,13 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#2C2C2E;pa
 body.layout-h .reels-wrapper{gap:16px;}
 .reel-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .snum{text-align:center;font-family:'Space Mono',monospace;font-size:9.5px;color:var(--muted);letter-spacing:.06em;}
-.xhint{font-size:11px;color:var(--muted);text-align:center;padding:10px 18px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:7px;max-width:600px;line-height:1.6;margin-top:16px;}
+.xhint{font-size:11px;color:var(--muted);text-align:center;padding:12px 18px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:7px;width:100%;max-width:600px;line-height:1.6;margin-top:16px;margin-left:auto;margin-right:auto;display:flex;flex-direction:column;align-items:center;gap:12px;}
 .xhint strong{color:var(--accent);}
+.xhint-text{text-align:center;}
+.btn-export{cursor:pointer;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;background:var(--accent);color:#0A0A0F;display:inline-flex;align-items:center;gap:7px;transition:all .2s;letter-spacing:.02em;}
+.btn-export:hover{filter:brightness(1.12);transform:translateY(-1px);}
+.btn-export:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none;}
+.export-progress{font-size:11px;color:var(--accent);font-family:'Space Mono',monospace;display:none;}
 
 /* ══ THE REEL FRAME ══ */
 .reel{width:var(--reel-w);height:var(--reel-h);position:relative;overflow:hidden;border-radius:8px;display:flex;flex-direction:column;font-family:'DM Sans',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.7);flex-shrink:0;}
@@ -230,6 +235,7 @@ body.layout-h .reels-wrapper{gap:16px;}
 /* WATERMARK */
 .reel-wm{position:absolute;z-index:0;font-weight:800;line-height:1;user-select:none;pointer-events:none;letter-spacing:-.05em;overflow:hidden;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -433,7 +439,11 @@ body.layout-h .reels-wrapper{gap:16px;}
     <div id="slideScale" style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace"></div>
   </div>
   <div class="reels-wrapper" id="reelsWrapper"></div>
-  <div class="xhint">💡 Formato 9:16 (1080×1920px) — padrão Reels/Stories. Exporte via screenshot ou Ctrl+P. Dimensão de preview: <strong>338×600px</strong>.</div>
+  <div class="xhint" id="exportHint">
+    <div class="xhint-text">💡 Cada tela é exportada como <strong>PNG 1080×1920px</strong> — pronto para Reels e Stories do Instagram.</div>
+    <button class="btn-export" id="btnExport" onclick="exportAllReels()">⬇ Baixar todas as telas (PNG)</button>
+    <div class="export-progress" id="exportProgress"></div>
+  </div>
 </div>
 </div><!-- /preview-col -->
 
@@ -1502,6 +1512,71 @@ function loadExample(){
   document.getElementById('closeMsg').value='Curtiu? Me segue para mais conteúdo de Sistemas & Engenharia! 🚀';
   openSlideIndex=-1;
   initSlidesList(); renderReels(); updateAcSummary('capa'); updateAcSummary('conteudo');
+}
+
+/* ══ EXPORT PNG ══ */
+async function exportAllReels() {
+  const btn      = document.getElementById('btnExport');
+  const progress = document.getElementById('exportProgress');
+  const reelEls  = Array.from(document.querySelectorAll('#reelsWrapper .reel'));
+  if (!reelEls.length) { alert('Gere as telas primeiro clicando em ▶ Gerar Reels.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Exportando…';
+  progress.style.display = 'block';
+
+  const titulo = (document.getElementById('capaTitulo')?.value || 'reel').trim().replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const total  = reelEls.length;
+
+  // Dimensões reais do reel (338×600 no preview = 1080×1920 na exportação via scale)
+  const REEL_W = 338;
+  const REEL_H = 600;
+  // scale=3.2 → 338*3.2≈1082 × 600*3.2=1920 (aprox. 1080×1920 Instagram nativo)
+  const EXPORT_SCALE = 3.2;
+
+  for (let i = 0; i < total; i++) {
+    const el = reelEls[i];
+    progress.textContent = `Exportando tela ${i + 1} de ${total}…`;
+
+    // Neutraliza qualquer transform de escala aplicado pelo modo horizontal
+    const origTransform = el.style.transform;
+    const origWidth     = el.style.width;
+    const origHeight    = el.style.height;
+    el.style.transform  = 'none';
+    el.style.width      = REEL_W + 'px';
+    el.style.height     = REEL_H + 'px';
+
+    try {
+      const canvas = await html2canvas(el, {
+        scale: EXPORT_SCALE,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        width: REEL_W,
+        height: REEL_H,
+        logging: false
+      });
+
+      const link    = document.createElement('a');
+      link.download = `${titulo}_tela_${String(i + 1).padStart(2, '0')}.png`;
+      link.href     = canvas.toDataURL('image/png');
+      link.click();
+    } catch(e) {
+      console.error('Erro na tela', i + 1, e);
+    }
+
+    el.style.transform = origTransform;
+    el.style.width     = origWidth;
+    el.style.height    = origHeight;
+
+    // Pausa entre downloads para o browser não bloquear
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  progress.textContent = `✅ ${total} tela${total > 1 ? 's exportadas' : ' exportada'}!`;
+  btn.disabled    = false;
+  btn.textContent = '⬇ Baixar todas as telas (PNG)';
+  setTimeout(() => { progress.style.display = 'none'; }, 4000);
 }
 
 /* ══ INIT ══ */
