@@ -300,14 +300,27 @@ body.layout-h .reels-wrapper{gap:16px;}
         <div><label>Tipografia</label><div class="typo-grid" id="typoGrid"></div></div>
 
         <hr class="sep">
-        <div style="font-family:'Syne',sans-serif;font-size:10px;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">Header / Footer</div>
-        <div class="row2">
-          <div><label>Handle</label><input type="text" id="hdrHandle" value="@gustavoboazms" oninput="renderReels()"></div>
-          <div><label>Tag direita</label><input type="text" id="hdrTag" value="" placeholder="Categoria (auto)" oninput="renderReels()"></div>
+        <div style="font-family:'Syne',sans-serif;font-size:10px;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">🔝 Header</div>
+        <div class="wm-toggle-row" style="margin-bottom:8px">
+          <button class="wm-opt active" id="hdr-on"  onclick="setHdrVisible(true,this)">✅ Ativo</button>
+          <button class="wm-opt"        id="hdr-off" onclick="setHdrVisible(false,this)">🚫 Desativado</button>
         </div>
-        <div class="row2">
-          <div><label>Rodapé esquerda</label><input type="text" id="ftrLeft" value="Analista de Sistemas · Eng. Comp." oninput="renderReels()"></div>
-          <div><label>Rodapé direita</label><input type="text" id="ftrRight" value="" placeholder="Contador (auto)" oninput="renderReels()"></div>
+        <div id="hdr-fields">
+          <div class="row2">
+            <div><label>Handle</label><input type="text" id="hdrHandle" value="@gustavoboazms" oninput="renderReels()"></div>
+            <div><label>Tag direita</label><input type="text" id="hdrTag" value="" placeholder="Categoria (auto)" oninput="renderReels()"></div>
+          </div>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-size:10px;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;margin-top:6px">⬇️ Footer</div>
+        <div class="wm-toggle-row" style="margin-bottom:8px">
+          <button class="wm-opt active" id="ftr-on"  onclick="setFtrVisible(true,this)">✅ Ativo</button>
+          <button class="wm-opt"        id="ftr-off" onclick="setFtrVisible(false,this)">🚫 Desativado</button>
+        </div>
+        <div id="ftr-fields">
+          <div class="row2">
+            <div><label>Rodapé esquerda</label><input type="text" id="ftrLeft" value="Analista de Sistemas · Eng. Comp." oninput="renderReels()"></div>
+            <div><label>Rodapé direita</label><input type="text" id="ftrRight" value="" placeholder="Contador (auto)" oninput="renderReels()"></div>
+          </div>
         </div>
 
       </div>
@@ -648,6 +661,23 @@ const CLOSING_TEMPLATES=[
   {id:'card',name:'Card',desc:'Frosted card'},
 ];
 let activeClosingTpl='classic';
+
+/* ══ HEADER / FOOTER VISIBILITY ══ */
+let reelHdrVisible=true, reelFtrVisible=true;
+function setHdrVisible(val,el){
+  reelHdrVisible=val;
+  document.getElementById('hdr-on').classList.toggle('active',val);
+  document.getElementById('hdr-off').classList.toggle('active',!val);
+  document.getElementById('hdr-fields').style.display=val?'':'none';
+  renderReels();
+}
+function setFtrVisible(val,el){
+  reelFtrVisible=val;
+  document.getElementById('ftr-on').classList.toggle('active',val);
+  document.getElementById('ftr-off').classList.toggle('active',!val);
+  document.getElementById('ftr-fields').style.display=val?'':'none';
+  renderReels();
+}
 
 function initCoverTemplates(){
   const g=document.getElementById('coverTplGrid'); if(!g)return; g.innerHTML='';
@@ -1193,6 +1223,7 @@ function applyHL(title,hl,color){const safe=xh(title);if(!hl||!hl.trim())return 
 function wd(){const d=document.createElement('div');d.className='reel-wrap';return d;}
 
 function makeReelHdr(category,p){
+  if(!reelHdrVisible) return '';
   const dark=isDark(p);
   const tag=(document.getElementById('hdrTag')?.value||'').trim()||category;
   const handle=(document.getElementById('hdrHandle')?.value||'@gustavoboazms').trim();
@@ -1203,6 +1234,7 @@ function makeReelHdr(category,p){
 }
 
 function makeReelFtr(cur,total,p){
+  if(!reelFtrVisible) return '';
   const ftrL=(document.getElementById('ftrLeft')?.value||'Analista de Sistemas · Eng. Comp.').trim();
   const ftrR=(document.getElementById('ftrRight')?.value||'').trim();
   const right=ftrR?`<span class="reel-page" style="color:${p.tMuted}">${xh(ftrR)}</span>`:`<span class="reel-page" style="color:${p.tMuted}"><span style="color:${p.c1}">${cur}</span>/${total}</span>`;

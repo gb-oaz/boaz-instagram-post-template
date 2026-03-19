@@ -399,15 +399,27 @@ body.layout-h .slide{transform-origin:top center;}
         <hr class="sep">
         <div><label>Tipografia</label><div class="typo-grid" id="typoGrid"></div></div>
         <hr class="sep">
-        <div style="font-family:'Syne',sans-serif;font-size:11px;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">🔝 Header — todos os slides</div>
-        <div class="row2">
-          <div><label>Esquerda — Handle</label><input type="text" id="hdrLeft" value="@gustavoboazms" oninput="renderSlides()"></div>
-          <div><label>Direita — Tag</label><input type="text" id="hdrRight" value="" placeholder="usa Categoria por padrão" oninput="renderSlides()"></div>
+        <div style="font-family:'Syne',sans-serif;font-size:11px;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">🔝 Header — todos os slides</div>
+        <div class="wm-toggle-row" style="margin-bottom:8px">
+          <button class="wm-opt active" id="hdr-on"  onclick="setHdrVisible(true,this)">✅ Ativo</button>
+          <button class="wm-opt"        id="hdr-off" onclick="setHdrVisible(false,this)">🚫 Desativado</button>
         </div>
-        <div style="font-family:'Syne',sans-serif;font-size:11px;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px;margin-top:6px">⬇️ Footer — slides de conteúdo</div>
-        <div class="row2">
-          <div><label>Esquerda</label><input type="text" id="ftrLeft" value="Analista de Sistemas · Eng. Computação" oninput="renderSlides()"></div>
-          <div><label>Direita</label><input type="text" id="ftrRight" value="" placeholder="Contador (auto)" oninput="renderSlides()"></div>
+        <div id="hdr-fields">
+          <div class="row2">
+            <div><label>Esquerda — Handle</label><input type="text" id="hdrLeft" value="@gustavoboazms" oninput="renderSlides()"></div>
+            <div><label>Direita — Tag</label><input type="text" id="hdrRight" value="" placeholder="usa Categoria por padrão" oninput="renderSlides()"></div>
+          </div>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-size:11px;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;margin-top:8px">⬇️ Footer — slides de conteúdo</div>
+        <div class="wm-toggle-row" style="margin-bottom:8px">
+          <button class="wm-opt active" id="ftr-on"  onclick="setFtrVisible(true,this)">✅ Ativo</button>
+          <button class="wm-opt"        id="ftr-off" onclick="setFtrVisible(false,this)">🚫 Desativado</button>
+        </div>
+        <div id="ftr-fields">
+          <div class="row2">
+            <div><label>Esquerda</label><input type="text" id="ftrLeft" value="Analista de Sistemas · Eng. Computação" oninput="renderSlides()"></div>
+            <div><label>Direita</label><input type="text" id="ftrRight" value="" placeholder="Contador (auto)" oninput="renderSlides()"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1483,6 +1495,7 @@ function cssv(p) { return `background:${p.bg}`; }
 function isDark(p) { return !p.id.startsWith('l-'); }
 
 function makeHdr(category, p) {
+  if(!postHdrVisible) return '';
   const dark = isDark(p);
   const hdrLeftVal  = (document.getElementById('hdrLeft')?.value  || '@gustavoboazms').trim();
   const hdrRightVal = (document.getElementById('hdrRight')?.value || '').trim() || category;
@@ -1493,6 +1506,7 @@ function makeHdr(category, p) {
 }
 
 function makeFtr(defaultLabel, cur, total, p) {
+  if(!postFtrVisible) return '';
   const ftrLeftVal  = (document.getElementById('ftrLeft')?.value  || '').trim() || defaultLabel;
   const ftrRightVal = (document.getElementById('ftrRight')?.value || '').trim();
   const rightHtml = ftrRightVal
@@ -1518,6 +1532,23 @@ const INTRO_TEMPLATES = [
   { id:'corner',     name:'Corner',      desc:'Título no canto superior' },
 ];
 let activeIntroTpl = 'classic';
+
+/* ══ HEADER / FOOTER VISIBILITY ══ */
+let postHdrVisible = true, postFtrVisible = true;
+function setHdrVisible(val, el) {
+  postHdrVisible = val;
+  document.getElementById('hdr-on').classList.toggle('active', val);
+  document.getElementById('hdr-off').classList.toggle('active', !val);
+  document.getElementById('hdr-fields').style.display = val ? '' : 'none';
+  renderSlides();
+}
+function setFtrVisible(val, el) {
+  postFtrVisible = val;
+  document.getElementById('ftr-on').classList.toggle('active', val);
+  document.getElementById('ftr-off').classList.toggle('active', !val);
+  document.getElementById('ftr-fields').style.display = val ? '' : 'none';
+  renderSlides();
+}
 
 function initIntroTemplates() {
   const g = document.getElementById('introTplGrid');
