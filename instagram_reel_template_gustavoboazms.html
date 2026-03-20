@@ -343,10 +343,10 @@ body.layout-h .reels-wrapper{gap:16px;}
     <div class="ac-body" id="acb-capa">
       <div class="ac-inner">
         <div class="row2">
-          <div><label>Título</label><input type="text" id="capaTitulo" value="Clean Code em Java" oninput="updateAcSummary('capa');renderReels()"></div>
-          <div><label>Categoria</label><input type="text" id="capaCategoria" value="Boas Práticas" oninput="renderReels()"></div>
+          <div><label>Título</label><input type="text" id="capaTitulo" value="" oninput="updateAcSummary('capa');renderReels()"></div>
+          <div><label>Categoria</label><input type="text" id="capaCategoria" value="" oninput="renderReels()"></div>
         </div>
-        <div><label>Subtítulo</label><input type="text" id="capaSubtitulo" value="Escreva código limpo, legível e profissional." oninput="renderReels()"></div>
+        <div><label>Subtítulo</label><input type="text" id="capaSubtitulo" value="" oninput="renderReels()"></div>
         <div>
           <label>Marca d'água</label>
           <div class="wm-toggle-row" style="margin-bottom:7px">
@@ -396,7 +396,7 @@ body.layout-h .reels-wrapper{gap:16px;}
           <div><label>Handle / Nome</label><input type="text" id="closeHandle" value="@gustavoboazms" oninput="renderReels()"></div>
           <div><label>Subtítulo</label><input type="text" id="closeSubtitle" value="" placeholder="ex: Analista · Dev" oninput="renderReels()"></div>
         </div>
-        <div><label>Mensagem</label><textarea id="closeMsg" rows="2" oninput="renderReels()">Curtiu? Me segue para mais conteúdo de Sistemas &amp; Engenharia! 🚀</textarea></div>
+        <div><label>Mensagem</label><textarea id="closeMsg" rows="2" oninput="renderReels()"></textarea></div>
         <div>
           <label>Avatar</label>
           <div class="wm-toggle-row" style="margin-bottom:7px">
@@ -768,10 +768,7 @@ const LANGS=[
 ];
 
 /* ══ DATA ══ */
-let slides=[
-  {eyebrow:'Conceito #01',title:'Por que legibilidade?',hl:'legibilidade',blocks:[{type:'list',content:['Código é lido 10× mais do que escrito','Nomes revelam intenção, não implementação','Funções pequenas = responsabilidade única']}]},
-  {eyebrow:'Na prática',title:'Nomes que comunicam',hl:'comunicam',blocks:[{type:'text',content:'Veja a diferença entre código ruim e limpo:'},{type:'code',lang:'java',content:'// ❌ Ruim\npublic double calc(int x, double y){\n    return x * y * 0.9;\n}\n\n// ✅ Clean Code\npublic double calcularPrecoComDesconto(\n        int qtd, double preco){\n    final double DESCONTO = 0.9;\n    return qtd * preco * DESCONTO;\n}'}]},
-];
+let slides=[];
 let openSlideIndex=-1;
 
 /* ══ SLIDE ACCORDION ══ */

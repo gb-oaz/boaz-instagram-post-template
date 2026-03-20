@@ -444,10 +444,10 @@ body.layout-h .slide{transform-origin:top center;}
     <div class="ac-body" id="acb-abertura">
       <div class="ac-inner">
         <div class="row2">
-          <div><label>Tema / Título</label><input type="text" id="postTopic" value="Clean Code em Java" oninput="updateAcSummary('abertura');renderSlides()"></div>
-          <div><label>Categoria</label><input type="text" id="postCategory" value="Boas Práticas" oninput="renderSlides()"></div>
+          <div><label>Tema / Título</label><input type="text" id="postTopic" value="" oninput="updateAcSummary('abertura');renderSlides()"></div>
+          <div><label>Categoria</label><input type="text" id="postCategory" value="" oninput="renderSlides()"></div>
         </div>
-        <div><label>Subtítulo</label><input type="text" id="postSubtitle" value="Escreva código Java legível, manutenível e profissional desde o início." oninput="renderSlides()"></div>
+        <div><label>Subtítulo</label><input type="text" id="postSubtitle" value="" oninput="renderSlides()"></div>
         <div>
           <label>Marca d'água</label>
           <div class="wm-toggle-row" style="margin-bottom:8px">
@@ -500,7 +500,7 @@ body.layout-h .slide{transform-origin:top center;}
           <div><label>Handle / Nome</label><input type="text" id="closeHandle" value="@gustavoboazms" oninput="renderSlides()"></div>
           <div><label>Subtítulo sob o handle</label><input type="text" id="closeSubtitle" value="" placeholder="ex: Analista · Engenheiro" oninput="renderSlides()"></div>
         </div>
-        <div><label>Mensagem principal</label><textarea id="closeMsg" rows="2" oninput="renderSlides()">Curtiu? Salva esse post e me segue para mais conteúdo de Sistemas &amp; Engenharia! 🚀</textarea></div>
+        <div><label>Mensagem principal</label><textarea id="closeMsg" rows="2" oninput="renderSlides()"></textarea></div>
         <div>
           <label>Avatar / Imagem de Fechamento</label>
           <div class="wm-toggle-row" style="margin-bottom:8px">
@@ -1140,22 +1140,7 @@ function highlight(code, lang) {
 }
 
 /* ══ DATA MODEL ══ */
-let slides = [
-  { eyebrow:'Conceito #01', title:'Princípios do Clean Code', hl:'Clean Code',
-    blocks:[ { type:'list', content:['Nomes revelam intenção, não implementação','Funções pequenas = uma única responsabilidade (SRP)','Comentários devem explicar o porquê, não o quê'] } ] },
-  { eyebrow:'Na prática', title:'Métodos que comunicam', hl:'comunicam',
-    blocks:[
-      { type:'text', content:'Veja a diferença entre código confuso e código limpo:' },
-      { type:'code', lang:'java', content:'// ❌ Ruim\npublic double calc(int x, double y) {\n    return x * y * 0.9;\n}\n\n// ✅ Clean Code\npublic double calcularPrecoComDesconto(\n        int quantidade, double precoUnitario) {\n    final double DESCONTO = 0.9;\n    return quantidade * precoUnitario * DESCONTO;\n}' }
-    ]
-  },
-  { eyebrow:'Princípio chave', title:'Regra do Boy Scout', hl:'Boy Scout',
-    blocks:[
-      { type:'quote', quoteText:'"Deixe o código sempre mais limpo do que você encontrou."', quoteAuthor:'Robert C. Martin — Clean Code' },
-      { type:'tip', tipIcon:'📌', tipLabel:'DICA', tipText:'Aplique isso em cada PR, não só em sprints de refatoração.' }
-    ]
-  }
-];
+let slides = [];
 
 /* ══ EDITOR ══ */
 const BLOCK_TYPES = [
