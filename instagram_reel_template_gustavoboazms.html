@@ -234,6 +234,16 @@ body.layout-h .reels-wrapper{gap:16px;}
 
 /* WATERMARK */
 .reel-wm{position:absolute;z-index:0;font-weight:800;line-height:1;user-select:none;pointer-events:none;letter-spacing:-.05em;overflow:hidden;}
+
+/* ══ IMAGE BLOCK (reel) ══ */
+.img-layout-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.img-layout-btn{cursor:pointer;border:1px solid var(--border);border-radius:6px;padding:4px 10px;background:rgba(255,255,255,.04);color:var(--muted);font-size:11px;font-weight:600;transition:all .15s;}
+.img-layout-btn:hover{background:rgba(255,255,255,.09);color:var(--text);}
+.img-layout-btn.active{background:rgba(0,245,160,.12);border-color:var(--accent);color:var(--accent);}
+.img-preview-strip{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.img-thumb{position:relative;width:46px;height:46px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+.img-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.rm-img{position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;font-size:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -754,6 +764,7 @@ const BLOCK_TYPES=[
   {type:'quote',label:'Citação',badge:'bt-quote',emoji:'💬'},
   {type:'highlight',label:'Destaque',badge:'bt-hl',emoji:'💡'},
   {type:'tip',label:'Dica',badge:'bt-tip',emoji:'⚠️'},
+  {type:'image',label:'Imagem',badge:'bt-image',emoji:'🖼️'},
   {type:'code',label:'Código',badge:'bt-code',emoji:'💻'},
 ];
 const LANGS=[
@@ -871,13 +882,50 @@ function renderBlocks(si){
       const stats=b.stats||[{val:'',label:''},{val:'',label:''}];
       if(!b.stats) slides[si].blocks[bi].stats=stats;
       inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px">${stats.map((st,si2)=>`<div class="row2"><div><label>Valor #${si2+1}</label><input type="text" value="${esc(st.val)}" placeholder="99%" oninput="slides[${si}].blocks[${bi}].stats[${si2}].val=this.value"></div><div><label>Label</label><input type="text" value="${esc(st.label)}" placeholder="Uptime" oninput="slides[${si}].blocks[${bi}].stats[${si2}].label=this.value"></div></div>`).join('')}<button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addStat(${si},${bi})" ${stats.length>=4?'disabled':''}>+ Stat</button></div>`;
+    } else if(b.type==='image'){
+      const layout=b.layout||'1'; const shape=b.shape||'square'; const arrange=b.arrange||'grid';
+      const maxImgs=parseInt(layout); const imgs=b.images||[];
+      const layouts=[{v:'1',label:'1',icon:'▪'},{v:'2',label:'2',icon:'▪▪'},{v:'3',label:'3',icon:'▪▪▪'},{v:'4',label:'4',icon:'▪▪▪▪'}];
+      const shapes=[{v:'square',label:'Quadrado'},{v:'portrait',label:'Retrato'},{v:'wide',label:'Paisagem'},{v:'circle',label:'Círculo'}];
+      const arrangements=[
+        {v:'grid',label:'Grade',desc:'lado a lado'},
+        {v:'stack',label:'Empilhado',desc:'um abaixo do outro'},
+        {v:'mosaic',label:'Mosaico',desc:'1 grande + pequenas'},
+        {v:'scattered-fan',label:'Leque',desc:'sobrepostos em leque'},
+        {v:'scattered-pile',label:'Pilha',desc:'empilhados tortos'},
+        {v:'scattered-spread',label:'Espalhado',desc:'dispersos em área'},
+        {v:'strip',label:'Tira',desc:'horizontal estreita'},
+      ];
+      const thumbsHtml=imgs.map((img,ii)=>`<div class="img-thumb"><img src="${img}" alt=""><button class="rm-img" onclick="removeImgReel(${si},${bi},${ii})">✕</button></div>`).join('');
+      const uploadDisabled=imgs.length>=maxImgs?'style="opacity:.4;pointer-events:none"':'';
+      inner=`<div style="padding:8px 11px;display:flex;flex-direction:column;gap:9px">
+        <div class="row2">
+          <div><label>Quantidade</label>
+            <div class="img-layout-row">${layouts.map(l=>`<button class="img-layout-btn${layout===l.v?' active':''}" onclick="setImgLayoutReel(${si},${bi},'${l.v}')">${l.icon} ${l.label}</button>`).join('')}</div>
+          </div>
+          <div><label>Formato</label>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${shapes.map(s=>`<button class="img-layout-btn${shape===s.v?' active':''}" onclick="setImgShapeReel(${si},${bi},'${s.v}')">${s.label}</button>`).join('')}</div>
+          </div>
+        </div>
+        <div><label>Arranjo</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${arrangements.map(a=>`<button class="img-layout-btn${arrange===a.v?' active':''}" onclick="setImgArrangeReel(${si},${bi},'${a.v}')" title="${a.desc}">${a.label}</button>`).join('')}</div>
+        </div>
+        <div><label>Imagens (${imgs.length}/${maxImgs})</label>
+          <div class="img-upload-zone" ${uploadDisabled}>
+            <input type="file" accept="image/*" multiple onchange="handleImgUploadReel(event,${si},${bi})">
+            <div class="uz-label"><strong>📁 Clique para adicionar imagens</strong>${maxImgs-imgs.length>0?`${maxImgs-imgs.length} restante(s)`:'Limite atingido'}</div>
+          </div>
+          ${thumbsHtml?`<div class="img-preview-strip">${thumbsHtml}</div>`:''}
+        </div>
+        <div><label>Legenda (opcional)</label><input type="text" value="${esc(b.caption||'')}" placeholder="Legenda abaixo das imagens..." oninput="slides[${si}].blocks[${bi}].caption=this.value"></div>
+      </div>`;
     } else if(b.type==='code'){
       const langOpts=LANGS.map(l=>`<option value="${l.id}" ${(b.lang||'python')===l.id?'selected':''}>${l.icon} ${l.name}</option>`).join('');
       const ld=LANGS.find(l=>l.id===(b.lang||'python'))||LANGS[0];
       inner=`<div style="padding:4px 9px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:7px"><span style="font-size:10px;color:var(--muted)">Linguagem:</span><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;padding:2px 6px;outline:none" onchange="slides[${si}].blocks[${bi}].lang=this.value;renderBlocks(${si})">${langOpts}</select><span style="font-size:10px;font-weight:700;color:${ld.color}">${ld.icon} ${ld.name}</span></div><textarea rows="5" style="font-family:'Space Mono',monospace;font-size:11px;border:none;border-radius:0;background:transparent;padding:7px 10px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>`;
     }
-    const labels={text:'Texto',list:'Lista',steps:'Passos',highlight:'Destaque',quote:'Citação',tip:'Dica',stat:'Stats',code:'Código'};
-    const colors={text:'#9090b0',list:'#00F5A0',steps:'#fb923c',highlight:'#00C8FF',quote:'#e879f9',tip:'#facc15',stat:'#34d399',code:'#ffb400'};
+    const labels={text:'Texto',list:'Lista',steps:'Passos',highlight:'Destaque',quote:'Citação',tip:'Dica',stat:'Stats',image:'Imagem',code:'Código'};
+    const colors={text:'#9090b0',list:'#00F5A0',steps:'#fb923c',highlight:'#00C8FF',quote:'#e879f9',tip:'#facc15',stat:'#34d399',image:'#38bdf8',code:'#ffb400'};
     div.innerHTML=`<div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)">
       <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 6px;border-radius:100px;background:${colors[b.type]}22;color:${colors[b.type]}">${labels[b.type]||b.type}</span>
       <div style="margin-left:auto;display:flex;gap:4px">
@@ -891,7 +939,27 @@ function renderBlocks(si){
 }
 
 function addStat(si,bi){if(!slides[si].blocks[bi].stats)slides[si].blocks[bi].stats=[];if(slides[si].blocks[bi].stats.length<4){slides[si].blocks[bi].stats.push({val:'',label:''});renderBlocks(si);}}
-function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},code:{lang:'python',content:''}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
+
+function handleImgUploadReel(event,si,bi){
+  const files=Array.from(event.target.files);
+  const b=slides[si].blocks[bi];
+  if(!b.images)b.images=[];
+  const maxImgs=parseInt(b.layout||'1');
+  const remaining=maxImgs-b.images.length;
+  const toLoad=files.slice(0,remaining);
+  let loaded=0;
+  toLoad.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{b.images.push(e.target.result);loaded++;if(loaded===toLoad.length){renderBlocks(si);renderReels();}};
+    reader.readAsDataURL(file);
+  });
+}
+function removeImgReel(si,bi,ii){slides[si].blocks[bi].images.splice(ii,1);renderBlocks(si);renderReels();}
+function setImgLayoutReel(si,bi,val){const b=slides[si].blocks[bi];b.layout=val;const max=parseInt(val);if(b.images&&b.images.length>max)b.images=b.images.slice(0,max);renderBlocks(si);renderReels();}
+function setImgShapeReel(si,bi,val){slides[si].blocks[bi].shape=val;renderBlocks(si);renderReels();}
+function setImgArrangeReel(si,bi,val){slides[si].blocks[bi].arrange=val;renderBlocks(si);renderReels();}
+
+function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},image:{images:[],layout:'1',shape:'square',arrange:'grid',caption:''},code:{lang:'python',content:''}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
 function removeBlock(si,bi){slides[si].blocks.splice(bi,1);renderBlocks(si);}
 function moveBlock(si,bi,d){const a=slides[si].blocks,ni=bi+d;if(ni<0||ni>=a.length)return;[a[bi],a[ni]]=[a[ni],a[bi]];renderBlocks(si);}
 
@@ -1337,15 +1405,16 @@ function makeCoverReel(titulo,categoria,subtitulo,cur,total,p){
 function makeContentReel(s,categoria,cur,total,p){
   const ww=wd(); const dark=isDark(p);
   const tf=activeTypo.titleFont, bf=activeTypo.bodyFont;
+  const onlyImages=s.blocks.length>0&&s.blocks.every(b=>b.type==='image');
   const bodyHtml=s.blocks.map(b=>renderBlock(b,p,bf)).join('');
   ww.innerHTML=`
   <div class="reel" style="background:${p.bg}">
     ${makeReelBase(p)}
     ${makeReelHdr(categoria,p)}
-    <div class="reel-body-content">
-      <div class="reel-eyebrow" style="color:${p.c2}">${xh(s.eyebrow)}</div>
-      <div class="reel-title" style="font-family:${tf};font-size:20px;color:${p.tMain}">${applyHL(s.title,s.hl,p.c1)}</div>
-      <div class="reel-body-text" style="color:${p.tSub};font-family:${bf}">${bodyHtml}</div>
+    <div class="reel-body-content" style="${onlyImages?'justify-content:center;align-items:center;':''}">
+      ${onlyImages?'':`<div class="reel-eyebrow" style="color:${p.c2}">${xh(s.eyebrow)}</div>
+      <div class="reel-title" style="font-family:${tf};font-size:20px;color:${p.tMain}">${applyHL(s.title,s.hl,p.c1)}</div>`}
+      <div class="reel-body-text" style="color:${p.tSub};font-family:${bf};${onlyImages?'flex:unset;width:100%':''}">${bodyHtml}</div>
     </div>
     ${makeReelFtr(cur,total,p)}
   </div>
@@ -1363,6 +1432,140 @@ function renderBlock(b,p,bf){
   if(b.type==='tip') return `<div class="tip-block" style="background:${ha(p.c1,dark?.07:.06)};border-color:${ha(p.c1,.2)}"><div class="tip-icon">${b.tipIcon||'💡'}</div><div><div class="tip-label" style="color:${p.c1}">${xh(b.tipLabel||'DICA')}</div><div class="tip-text" style="color:${p.tMain}">${xh(b.tipText||'')}</div></div></div>`;
   if(b.type==='stat'){const stats=(b.stats||[]).filter(s=>s.val||s.label);return `<div class="stat-grid">${stats.map(s=>`<div class="stat-card" style="background:${ha(p.c1,dark?.08:.06)};border-color:${ha(p.c1,.2)}"><div class="stat-val" style="color:${p.c1}">${xh(s.val)}</div><div class="stat-label" style="color:${sc}">${xh(s.label)}</div></div>`).join('')}</div>`;}
   if(b.type==='code'){const langId=b.lang||'python';const ld=LANGS.find(l=>l.id===langId)||LANGS[0];const cbBg=p.cbBg||(dark?'rgba(0,0,0,.5)':'#F0F0F8');const mf=activeTypo.monoFont||"'Space Mono',monospace";return `<div class="code-block" style="background:${cbBg};border-left-color:${p.c1};font-family:${mf}"><div class="cbh" style="background:${dark?'rgba(0,0,0,.25)':'rgba(0,0,0,.06)'};color:${ld.color}"><div class="cbh-dots"><span></span><span></span><span></span></div><span class="cbh-lang">${ld.icon} ${ld.name}</span></div><pre style="color:${dark?'rgba(240,240,245,.85)':p.tMain};font-family:${mf}">${highlight(b.content||'',langId)}</pre></div>`;}
+
+  if(b.type==='image'){
+    const imgs=(b.images||[]).filter(s=>s);
+    const shape=b.shape||'square';
+    const arrange=b.arrange||'grid';
+    const caption=b.caption||'';
+    const n=imgs.length;
+    if(!n) return `<div style="border:2px dashed ${p.bdr};border-radius:10px;height:80px;display:flex;align-items:center;justify-content:center;color:${p.tMuted};font-size:12px">🖼️ Nenhuma imagem adicionada</div>`;
+
+    const brMap={square:'8px',portrait:'10px',wide:'6px',circle:'50%'};
+    const br=brMap[shape]||'8px';
+    const arMap={square:'1/1',portrait:'4/5',wide:'16/9',circle:'1/1'};
+    const ar=arMap[shape]||'1/1';
+    // Reel width inside padding = 338 - 44 = 294px usable
+    const imgBase=`width:100%;height:100%;object-fit:cover;border-radius:${br};display:block;`;
+    const cell=(src,extraC='',extraI='')=>
+      `<div style="aspect-ratio:${ar};overflow:hidden;border-radius:${br};flex-shrink:0;${extraC}"><img src="${src}" style="${imgBase}${extraI}"></div>`;
+    const circleSize=n===1?160:n===2?120:n<=4?100:85;
+
+    let grid='';
+
+    // ── GRADE ──────────────────────────────────────────────────────
+    if(arrange==='grid'){
+      if(shape==='circle'){
+        const cs=circleSize;
+        const cCells=imgs.map(s=>`<div style="width:${cs}px;height:${cs}px;border-radius:50%;overflow:hidden;flex-shrink:0;"><img src="${s}" style="${imgBase}"></div>`).join('');
+        grid=`<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center">${cCells}</div>`;
+      } else if(n===1){
+        grid=`<div style="width:100%">${cell(imgs[0])}</div>`;
+      } else if(n===2){
+        grid=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${imgs.map(s=>cell(s)).join('')}</div>`;
+      } else if(n===3){
+        grid=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">${imgs.map(s=>cell(s)).join('')}</div>`;
+      } else {
+        grid=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${imgs.map(s=>cell(s)).join('')}</div>`;
+      }
+    }
+
+    // ── EMPILHADO ──────────────────────────────────────────────────
+    else if(arrange==='stack'){
+      if(shape==='circle'){
+        const cs=circleSize;
+        const cCells=imgs.map(s=>`<div style="width:${cs}px;height:${cs}px;border-radius:50%;overflow:hidden;margin:0 auto;"><img src="${s}" style="${imgBase}"></div>`).join('');
+        grid=`<div style="display:flex;flex-direction:column;gap:7px;align-items:center">${cCells}</div>`;
+      } else {
+        const stackW=shape==='portrait'?'70%':'100%';
+        const cells=imgs.map(s=>`<div style="width:${stackW};margin:0 auto">${cell(s)}</div>`).join('');
+        grid=`<div style="display:flex;flex-direction:column;gap:5px">${cells}</div>`;
+      }
+    }
+
+    // ── MOSAICO ────────────────────────────────────────────────────
+    else if(arrange==='mosaic'){
+      if(n===1){
+        grid=`<div style="width:100%">${cell(imgs[0])}</div>`;
+      } else if(shape==='circle'){
+        const big=circleSize+30; const sm=circleSize-20;
+        const smalls=imgs.slice(1).map(s=>`<div style="width:${sm}px;height:${sm}px;border-radius:50%;overflow:hidden;"><img src="${s}" style="${imgBase}"></div>`).join('');
+        grid=`<div style="display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap"><div style="width:${big}px;height:${big}px;border-radius:50%;overflow:hidden;flex-shrink:0;"><img src="${imgs[0]}" style="${imgBase}"></div><div style="display:flex;flex-direction:column;gap:7px">${smalls}</div></div>`;
+      } else {
+        grid=`<div style="display:grid;grid-template-columns:3fr 2fr;gap:5px">${cell(imgs[0])}<div style="display:flex;flex-direction:column;gap:5px">${imgs.slice(1).map(s=>cell(s)).join('')}</div></div>`;
+      }
+    }
+
+    // ── LEQUE (scattered-fan) ── inline-block approach for PNG safety ──
+    else if(arrange==='scattered-fan'){
+      const angles=[-12,-5,4,13];
+      // Use inline-block with margin-based offsets — html2canvas safe
+      const scW=shape==='portrait'?100:shape==='wide'?140:114;
+      const scH=shape==='portrait'?Math.round(scW*1.25):shape==='wide'?Math.round(scW*0.5625):scW;
+      const wrapH=scH+50;
+      const pieces=imgs.map((s,i)=>{
+        const rot=angles[i%angles.length];
+        const ml=i===0?0:(i===1?-20:(i===2?-30:-28));
+        return `<div style="display:inline-block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 4px 16px rgba(0,0,0,.4);margin-left:${ml}px;vertical-align:middle;flex-shrink:0;">` +
+          `<img src="${s}" style="${imgBase}"></div>`;
+      }).join('');
+      grid=`<div style="display:flex;align-items:center;justify-content:center;height:${wrapH}px;overflow:visible">${pieces}</div>`;
+    }
+
+    // ── PILHA (scattered-pile) ── rotações alternadas ──────────────
+    else if(arrange==='scattered-pile'){
+      const angles=[6,-8,4,-6,9];
+      const scW=shape==='portrait'?110:shape==='wide'?150:120;
+      const scH=shape==='portrait'?Math.round(scW*1.25):shape==='wide'?Math.round(scW*0.5625):scW;
+      const wrapH=scH+40;
+      // Use inline stacking with negative margin, each next on top
+      const pieces=imgs.map((s,i)=>{
+        const rot=angles[i%angles.length];
+        const zIndex=i+1;
+        const mt=i===0?0:-Math.round(scH*0.88);
+        const ml=i===0?0:(i%2===1?12:-12);
+        return `<div style="display:block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 4px 18px rgba(0,0,0,.45);margin-left:auto;margin-right:auto;position:relative;z-index:${zIndex};margin-top:${mt}px;margin-left:calc(50% - ${Math.round(scW/2)}px + ${ml}px);">` +
+          `<img src="${s}" style="${imgBase}"></div>`;
+      }).join('');
+      grid=`<div style="display:block;overflow:visible;padding-bottom:8px">${pieces}</div>`;
+    }
+
+    // ── ESPALHADO (scattered-spread) ── grade levemente rotacionada ─
+    else if(arrange==='scattered-spread'){
+      const angleSet=[[-4,3],[-6,-3],[5,-4],[3,6]];
+      const scW=shape==='portrait'?100:shape==='wide'?130:110;
+      const scH=shape==='portrait'?Math.round(scW*1.25):shape==='wide'?Math.round(scW*0.5625):scW;
+      const cols=n<=2?n:2;
+      const rows=Math.ceil(n/cols);
+      const gapH=10; const gapV=12;
+      const totalW=cols*scW+(cols-1)*gapH;
+      const totalH=rows*scH+(rows-1)*gapV+30;
+      const pieces=imgs.map((s,i)=>{
+        const col=i%cols; const row=Math.floor(i/cols);
+        const [rx,ry]=angleSet[i%angleSet.length];
+        const rot=(rx+ry)/2;
+        const ox=Math.round(rx*1.5); const oy=Math.round(ry*1.5);
+        const left=col*(scW+gapH)+ox;
+        const top=row*(scH+gapV)+oy+15;
+        return `<div style="position:absolute;left:${left}px;top:${top}px;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 4px 16px rgba(0,0,0,.4);z-index:${i+1};">` +
+          `<img src="${s}" style="${imgBase}"></div>`;
+      }).join('');
+      grid=`<div style="position:relative;width:${totalW+30}px;height:${totalH}px;margin:0 auto">${pieces}</div>`;
+    }
+
+    // ── TIRA ───────────────────────────────────────────────────────
+    else if(arrange==='strip'){
+      const stripH=shape==='portrait'?130:shape==='wide'?88:108;
+      const cells=imgs.map(s=>
+        `<div style="flex:1;min-width:0;height:${stripH}px;overflow:hidden;border-radius:${br};"><img src="${s}" style="${imgBase}"></div>`
+      ).join('');
+      grid=`<div style="display:flex;gap:4px">${cells}</div>`;
+    }
+
+    const cap=caption?`<div style="font-size:10px;color:${p.tMuted};text-align:center;margin-top:5px;line-height:1.4">${xh(caption)}</div>`:'';
+    return `<div style="width:100%">${grid}${cap}</div>`;
+  }
+
   return '';
 }
 

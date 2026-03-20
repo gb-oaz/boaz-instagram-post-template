@@ -1319,11 +1319,13 @@ function renderBlocks(si) {
         { v:'circle',   label:'Círculo' },
       ];
       const arrangements = [
-        { v:'grid',     label:'Grade',        desc:'lado a lado' },
-        { v:'stack',    label:'Empilhado',     desc:'um abaixo do outro' },
-        { v:'mosaic',   label:'Mosaico',       desc:'1 grande + pequenas' },
-        { v:'scattered',label:'Espalhado',     desc:'sobrepostos' },
-        { v:'strip',    label:'Tira',          desc:'horizontal estreita' },
+        { v:'grid',          label:'Grade',        desc:'lado a lado' },
+        { v:'stack',         label:'Empilhado',    desc:'um abaixo do outro' },
+        { v:'mosaic',        label:'Mosaico',      desc:'1 grande + pequenas' },
+        { v:'scattered-fan', label:'Leque',        desc:'sobrepostos em leque' },
+        { v:'scattered-pile',label:'Pilha',        desc:'empilhados tortos' },
+        { v:'scattered-spread',label:'Espalhado',  desc:'dispersos em área' },
+        { v:'strip',         label:'Tira',         desc:'horizontal estreita' },
       ];
       const thumbsHtml = imgs.map((img, ii) => `
         <div class="img-thumb">
@@ -2320,24 +2322,58 @@ function renderBlockHTML(b, p) {
       }
     }
 
-    // ── SCATTERED: overlapping fan ───────────────────────────────
-    else if (arrange === 'scattered') {
-      const angles  = [-9, 0, 7, -4];
-      const offsets = [[-28,-10],[28,12],[-10,18],[20,-14]];
-      // For scattered we need fixed pixel sizes so overlapping works
-      // Compute width from aspect-ratio
-      const scW = shape === 'portrait' ? 160 : shape === 'wide' ? 220 : 180;
+    // ── SCATTERED-FAN: leque com rotações, flex inline ─────────────
+    else if (arrange === 'scattered-fan') {
+      const angles = [-12, -5, 4, 13];
+      const scW = shape === 'portrait' ? 140 : shape === 'wide' ? 200 : 160;
       const scH = shape === 'portrait' ? Math.round(scW*1.25) : shape === 'wide' ? Math.round(scW*0.5625) : scW;
       const wrapH = scH + 60;
-      const pieces = imgs.map((s,i) => {
-        const [ox,oy] = offsets[i % offsets.length];
+      const pieces = imgs.map((s, i) => {
         const rot = angles[i % angles.length];
-        const z = [1,3,2,4][i % 4];
-        return `<div style="position:absolute;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;` +
-          `transform:rotate(${rot}deg) translate(${ox}px,${oy}px);z-index:${z};box-shadow:0 5px 18px rgba(0,0,0,.4);">` +
+        const ml = i === 0 ? 0 : (i === 1 ? -22 : (i === 2 ? -32 : -30));
+        return `<div style="display:inline-block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 5px 18px rgba(0,0,0,.4);margin-left:${ml}px;vertical-align:middle;flex-shrink:0;">` +
           `<img src="${s}" style="${imgBase}"></div>`;
       }).join('');
-      grid = `<div style="position:relative;height:${wrapH}px;display:flex;align-items:center;justify-content:center">${pieces}</div>`;
+      grid = `<div style="display:flex;align-items:center;justify-content:center;height:${wrapH}px;overflow:visible">${pieces}</div>`;
+    }
+
+    // ── SCATTERED-PILE: empilhados tortos com margem negativa ───────
+    else if (arrange === 'scattered-pile') {
+      const angles = [6, -8, 4, -6, 9];
+      const scW = shape === 'portrait' ? 150 : shape === 'wide' ? 210 : 170;
+      const scH = shape === 'portrait' ? Math.round(scW*1.25) : shape === 'wide' ? Math.round(scW*0.5625) : scW;
+      const pieces = imgs.map((s, i) => {
+        const rot = angles[i % angles.length];
+        const zIndex = i + 1;
+        const mt = i === 0 ? 0 : -Math.round(scH * 0.88);
+        const ml = i === 0 ? 0 : (i % 2 === 1 ? 14 : -14);
+        return `<div style="display:block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 5px 18px rgba(0,0,0,.45);position:relative;z-index:${zIndex};margin-top:${mt}px;margin-left:calc(50% - ${Math.round(scW/2)}px + ${ml}px);">` +
+          `<img src="${s}" style="${imgBase}"></div>`;
+      }).join('');
+      grid = `<div style="display:block;overflow:visible;padding-bottom:8px">${pieces}</div>`;
+    }
+
+    // ── SCATTERED-SPREAD: grade levemente rotacionada ──────────────
+    else if (arrange === 'scattered-spread') {
+      const angleSet = [[-4, 3], [-6, -3], [5, -4], [3, 6]];
+      const scW = shape === 'portrait' ? 130 : shape === 'wide' ? 180 : 150;
+      const scH = shape === 'portrait' ? Math.round(scW*1.25) : shape === 'wide' ? Math.round(scW*0.5625) : scW;
+      const cols = n <= 2 ? n : 2;
+      const rows = Math.ceil(n / cols);
+      const gapH = 12; const gapV = 14;
+      const totalW = cols * scW + (cols - 1) * gapH;
+      const totalH = rows * scH + (rows - 1) * gapV + 36;
+      const pieces = imgs.map((s, i) => {
+        const col = i % cols; const row = Math.floor(i / cols);
+        const [rx, ry] = angleSet[i % angleSet.length];
+        const rot = (rx + ry) / 2;
+        const ox = Math.round(rx * 1.5); const oy = Math.round(ry * 1.5);
+        const left = col * (scW + gapH) + ox;
+        const top  = row * (scH + gapV) + oy + 18;
+        return `<div style="position:absolute;left:${left}px;top:${top}px;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 5px 18px rgba(0,0,0,.4);z-index:${i+1};">` +
+          `<img src="${s}" style="${imgBase}"></div>`;
+      }).join('');
+      grid = `<div style="position:relative;width:${totalW+30}px;height:${totalH}px;margin:0 auto">${pieces}</div>`;
     }
 
     // ── STRIP: horizontal thin bar ───────────────────────────────
