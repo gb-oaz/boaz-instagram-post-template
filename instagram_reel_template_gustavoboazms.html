@@ -22,7 +22,10 @@ body.layout-h .preview-col{flex:1;min-width:0;height:100vh;overflow-y:auto;paddi
 
 /* ══ ACCORDION ══ */
 .accordion{width:100%;max-width:780px;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:16px;overflow:hidden;}
-body.layout-h .accordion{max-width:none;}
+body.layout-h .accordion{max-width:none;overflow:visible;border-radius:12px;}
+body.layout-h .accordion .ac-item:first-child .ac-header{border-radius:12px 12px 0 0;}
+body.layout-h .accordion .ac-item:last-child{border-bottom:none;}
+body.layout-h .accordion .ac-item:last-child .ac-header:not(.open){border-radius:0 0 12px 12px;}
 .ac-item{border-bottom:1px solid var(--border);}
 .ac-item:last-child{border-bottom:none;}
 .ac-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--surface);cursor:pointer;user-select:none;transition:background .15s;gap:10px;}
@@ -37,7 +40,7 @@ body.layout-h .accordion{max-width:none;}
 .ac-header.open .ac-chevron{transform:rotate(180deg);}
 .ac-body{display:none;}
 .ac-body.open{display:block;}
-body.layout-h .ac-body.open{overflow-y:auto;max-height:calc(100vh - 220px);}
+body.layout-h .ac-body.open .ac-inner{padding-bottom:60px;}
 .ac-inner{padding:18px 20px 22px;background:rgba(0,0,0,.12);display:flex;flex-direction:column;gap:13px;}
 
 /* ══ SLIDE ACCORDION ══ */
@@ -215,6 +218,21 @@ body.layout-h .reels-wrapper{gap:16px;}
 .stat-card{border-radius:9px;padding:10px 12px;border-width:1px;border-style:solid;}
 .stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1;}
 .stat-label{font-size:10.5px;margin-top:2px;line-height:1.3;}
+/* compare */
+.compare-wrap{display:flex;flex-direction:column;gap:6px;width:100%;}
+.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.compare-col{border-radius:8px;padding:9px 11px;border-width:1px;border-style:solid;}
+.compare-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.compare-items{display:flex;flex-direction:column;gap:4px;}
+.compare-item{font-size:11px;line-height:1.4;display:flex;gap:5px;align-items:flex-start;}
+/* divider */
+.divider-block{display:flex;align-items:center;gap:10px;padding:4px 0;}
+.div-line{flex:1;height:1px;}
+.div-label{font-family:'Space Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;white-space:nowrap;}
+/* timeline */
+.tl-date{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;}
+.tl-title{font-size:11.5px;font-weight:700;line-height:1.3;margin-bottom:2px;}
+.tl-desc{font-size:10.5px;line-height:1.5;opacity:.8;}
 /* code */
 .code-block{border-radius:6px;overflow:hidden;font-family:'Space Mono',monospace;font-size:10px;line-height:1.65;border-left-width:3px;border-left-style:solid;}
 .cbh{display:flex;align-items:center;gap:7px;padding:4px 10px;}
@@ -496,7 +514,7 @@ body.layout-h .reels-wrapper{gap:16px;}
   </div>
   <div class="reels-wrapper" id="reelsWrapper"></div>
   <div class="xhint" id="exportHint">
-    <div class="xhint-text">💡 Cada tela é exportada como <strong>PNG 1080×1920px</strong> — pronto para Reels e Stories do Instagram.</div>
+    <div class="xhint-text">💡 Cada tela é exportada como <strong>PNG 1080×1920px</strong>. Ao clicar, escolha a pasta de destino — os arquivos serão salvos com o título + numeração sequencial (<strong>titulo_tela_01.png</strong>, <strong>02.png</strong>…).</div>
     <button class="btn-export" id="btnExport" onclick="exportAllReels()">⬇ Baixar todas as telas (PNG)</button>
     <div class="export-progress" id="exportProgress"></div>
   </div>
@@ -810,8 +828,11 @@ const BLOCK_TYPES=[
   {type:'quote',label:'Citação',badge:'bt-quote',emoji:'💬'},
   {type:'highlight',label:'Destaque',badge:'bt-hl',emoji:'💡'},
   {type:'tip',label:'Dica',badge:'bt-tip',emoji:'⚠️'},
+  {type:'compare',label:'Comparar',badge:'bt-compare',emoji:'⚖️'},
   {type:'image',label:'Imagem',badge:'bt-image',emoji:'🖼️'},
   {type:'code',label:'Código',badge:'bt-code',emoji:'💻'},
+  {type:'divider',label:'Divisor',badge:'bt-divider',emoji:'─'},
+  {type:'timeline',label:'Linha do Tempo',badge:'bt-timeline',emoji:'🕐'},
 ];
 const LANGS=[
   {id:'python',name:'Python',icon:'🐍',color:'#3b82f6'},{id:'java',name:'Java',icon:'☕',color:'#f97316'},
@@ -927,7 +948,7 @@ function renderBlocks(si){
     } else if(b.type==='stat'){
       const stats=b.stats||[{val:'',label:''},{val:'',label:''}];
       if(!b.stats) slides[si].blocks[bi].stats=stats;
-      inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px">${stats.map((st,si2)=>`<div class="row2"><div><label>Valor #${si2+1}</label><input type="text" value="${esc(st.val)}" placeholder="99%" oninput="slides[${si}].blocks[${bi}].stats[${si2}].val=this.value"></div><div><label>Label</label><input type="text" value="${esc(st.label)}" placeholder="Uptime" oninput="slides[${si}].blocks[${bi}].stats[${si2}].label=this.value"></div></div>`).join('')}<button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addStat(${si},${bi})" ${stats.length>=4?'disabled':''}>+ Stat</button></div>`;
+      inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px">${stats.map((st,si2)=>`<div class="row2"><div><label>Valor #${si2+1}</label><input type="text" value="${esc(st.val)}" placeholder="99%" oninput="slides[${si}].blocks[${bi}].stats[${si2}].val=this.value"></div><div><label>Label</label><input type="text" value="${esc(st.label)}" placeholder="Uptime" oninput="slides[${si}].blocks[${bi}].stats[${si2}].label=this.value"></div></div><div class="row2"><div><label>Cor (vazio = paleta)</label><input type="text" value="${esc(st.color||'')}" placeholder="#ffffff ou vazio" oninput="slides[${si}].blocks[${bi}].stats[${si2}].color=this.value"></div><div style="display:flex;align-items:flex-end;gap:5px"><input type="color" value="${st.color||'#6366f1'}" oninput="slides[${si}].blocks[${bi}].stats[${si2}].color=this.value" style="width:34px;height:26px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].stats[${si2}].color='';renderBlocks(${si})">↺</button></div></div>`).join('')}<button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addStat(${si},${bi})" ${stats.length>=4?'disabled':''}>+ Stat</button></div>`;
     } else if(b.type==='image'){
       const imgs=b.images||[];
       const transformCards=imgs.map((img,ii)=>{
@@ -991,9 +1012,39 @@ function renderBlocks(si){
       const langOpts=LANGS.map(l=>`<option value="${l.id}" ${(b.lang||'python')===l.id?'selected':''}>${l.icon} ${l.name}</option>`).join('');
       const ld=LANGS.find(l=>l.id===(b.lang||'python'))||LANGS[0];
       inner=`<div style="padding:4px 9px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:7px"><span style="font-size:10px;color:var(--muted)">Linguagem:</span><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;padding:2px 6px;outline:none" onchange="slides[${si}].blocks[${bi}].lang=this.value;renderBlocks(${si})">${langOpts}</select><span style="font-size:10px;font-weight:700;color:${ld.color}">${ld.icon} ${ld.name}</span></div><textarea rows="5" style="font-family:'Space Mono',monospace;font-size:11px;border:none;border-radius:0;background:transparent;padding:7px 10px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>`;
+    } else if(b.type==='divider'){
+      inner=`<div style="padding:7px 10px"><label>Texto do divisor (opcional)</label><input type="text" value="${esc(b.divLabel||'')}" placeholder="ou deixe vazio" oninput="slides[${si}].blocks[${bi}].divLabel=this.value"></div>`;
+    } else if(b.type==='compare'){
+      const left=b.leftTitle||'✅ Bom'; const right=b.rightTitle||'❌ Ruim';
+      const lItems=Array.isArray(b.leftItems)?b.leftItems.join('\n'):(b.leftItems||'');
+      const rItems=Array.isArray(b.rightItems)?b.rightItems.join('\n'):(b.rightItems||'');
+      inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px">
+        <div class="row2"><div><label>Título Esquerda</label><input type="text" value="${esc(left)}" oninput="slides[${si}].blocks[${bi}].leftTitle=this.value"></div><div><label>Título Direita</label><input type="text" value="${esc(right)}" oninput="slides[${si}].blocks[${bi}].rightTitle=this.value"></div></div>
+        <div class="row2">
+          <div style="display:flex;flex-direction:column;gap:3px"><label>Cor Esquerda</label><div style="display:flex;gap:4px;align-items:center"><input type="color" value="${b.leftColor||'#22c55e'}" oninput="slides[${si}].blocks[${bi}].leftColor=this.value" style="width:32px;height:24px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px"><input type="text" value="${esc(b.leftColor||'')}" placeholder="vazio=paleta" style="flex:1;font-size:10px" oninput="slides[${si}].blocks[${bi}].leftColor=this.value"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].leftColor=''" title="Paleta">↺</button></div></div>
+          <div style="display:flex;flex-direction:column;gap:3px"><label>Cor Direita</label><div style="display:flex;gap:4px;align-items:center"><input type="color" value="${b.rightColor||'#f87171'}" oninput="slides[${si}].blocks[${bi}].rightColor=this.value" style="width:32px;height:24px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px"><input type="text" value="${esc(b.rightColor||'')}" placeholder="vazio=paleta" style="flex:1;font-size:10px" oninput="slides[${si}].blocks[${bi}].rightColor=this.value"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].rightColor=''" title="Paleta">↺</button></div></div>
+        </div>
+        <div class="row2"><div><label>Ícone Esquerda</label><input type="text" value="${esc(b.leftIcon||'✓')}" style="max-width:60px" oninput="slides[${si}].blocks[${bi}].leftIcon=this.value"></div><div><label>Ícone Direita</label><input type="text" value="${esc(b.rightIcon||'✕')}" style="max-width:60px" oninput="slides[${si}].blocks[${bi}].rightIcon=this.value"></div></div>
+        <div class="row2"><div><label>Itens esquerda (um/linha)</label><textarea rows="3" style="border:1px solid var(--border);border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].leftItems=this.value.split('\\n')">${escTA(lItems)}</textarea></div><div><label>Itens direita (um/linha)</label><textarea rows="3" style="border:1px solid var(--border);border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].rightItems=this.value.split('\\n')">${escTA(rItems)}</textarea></div></div>
+      </div>`;
+    } else if(b.type==='timeline'){
+      const items=b.items||[]; const orient=b.orient||'vertical'; const align=b.align||'left';
+      inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:6px">
+        <div class="row2">
+          <div><label>Orientação</label><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 7px;width:100%" oninput="slides[${si}].blocks[${bi}].orient=this.value"><option value="vertical" ${orient==='vertical'?'selected':''}>Vertical</option><option value="horizontal" ${orient==='horizontal'?'selected':''}>Horizontal</option></select></div>
+          <div><label>Alinhamento</label><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 7px;width:100%" oninput="slides[${si}].blocks[${bi}].align=this.value"><option value="left" ${align==='left'?'selected':''}>Esquerda</option><option value="right" ${align==='right'?'selected':''}>Direita</option></select></div>
+        </div>
+        ${items.map((it,ii)=>`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:7px 9px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px"><span style="font-size:9.5px;color:var(--muted);font-weight:700">Evento ${ii+1}</span><div style="display:flex;gap:3px">${ii>0?`<button class="btn-reorder" onclick="moveTLItem(${si},${bi},${ii},-1)">↑</button>`:''} ${ii<items.length-1?`<button class="btn-reorder" onclick="moveTLItem(${si},${bi},${ii},1)">↓</button>`:''}<button class="btn btn-danger" style="font-size:9px;padding:1px 6px" onclick="removeTLItem(${si},${bi},${ii})">✕</button></div></div>
+          <div class="row2"><div><label>Data / Período</label><input type="text" value="${esc(it.date||'')}" placeholder="2024" oninput="slides[${si}].blocks[${bi}].items[${ii}].date=this.value"></div><div style="display:flex;flex-direction:column;gap:2px"><label>Cor do ponto</label><div style="display:flex;gap:4px;align-items:center"><input type="color" value="${it.color||'#6366f1'}" oninput="slides[${si}].blocks[${bi}].items[${ii}].color=this.value" style="width:30px;height:24px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;padding:1px"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].items[${ii}].color=''" title="Cor da paleta">↺ Paleta</button></div></div></div>
+          <div><label>Título</label><input type="text" value="${esc(it.title||'')}" placeholder="Título do evento" oninput="slides[${si}].blocks[${bi}].items[${ii}].title=this.value"></div>
+          <div><label>Descrição (opcional)</label><input type="text" value="${esc(it.desc||'')}" placeholder="Descrição breve" oninput="slides[${si}].blocks[${bi}].items[${ii}].desc=this.value"></div>
+        </div>`).join('')}
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addTLItem(${si},${bi})">+ Adicionar evento</button>
+      </div>`;
     }
-    const labels={text:'Texto',list:'Lista',steps:'Passos',highlight:'Destaque',quote:'Citação',tip:'Dica',stat:'Stats',image:'Imagem',code:'Código'};
-    const colors={text:'#9090b0',list:'#00F5A0',steps:'#fb923c',highlight:'#00C8FF',quote:'#e879f9',tip:'#facc15',stat:'#34d399',image:'#38bdf8',code:'#ffb400'};
+    const labels={text:'Texto',list:'Lista',steps:'Passos',highlight:'Destaque',quote:'Citação',tip:'Dica',stat:'Stats',image:'Imagem',code:'Código',compare:'Comparar',divider:'Divisor',timeline:'Linha do Tempo'};
+    const colors={text:'#9090b0',list:'#00F5A0',steps:'#fb923c',highlight:'#00C8FF',quote:'#e879f9',tip:'#facc15',stat:'#34d399',image:'#38bdf8',code:'#ffb400',compare:'#a78bfa',divider:'#94a3b8',timeline:'#f472b6'};
     div.innerHTML=`<div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)">
       <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 6px;border-radius:100px;background:${colors[b.type]}22;color:${colors[b.type]}">${labels[b.type]||b.type}</span>
       <div style="margin-left:auto;display:flex;gap:4px">
@@ -1073,9 +1124,12 @@ function applyMCDragReel(cx,cy){
 }
 function stopMCDragReel(){_mcR=null;document.removeEventListener('mousemove',onMCDragReel);document.removeEventListener('mouseup',stopMCDragReel);document.removeEventListener('touchmove',onMCDragTouchReel);document.removeEventListener('touchend',stopMCDragReel);}
 
-function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},image:{images:[]},code:{lang:'python',content:''}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
+function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]},image:{images:[]},code:{lang:'python',content:''},divider:{divLabel:''},timeline:{orient:'vertical',align:'left',items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
 function removeBlock(si,bi){slides[si].blocks.splice(bi,1);renderBlocks(si);}
 function moveBlock(si,bi,d){const a=slides[si].blocks,ni=bi+d;if(ni<0||ni>=a.length)return;[a[bi],a[ni]]=[a[ni],a[bi]];renderBlocks(si);}
+function addTLItem(si,bi){if(!slides[si].blocks[bi].items)slides[si].blocks[bi].items=[];slides[si].blocks[bi].items.push({date:'',title:'',desc:'',color:''});renderBlocks(si);}
+function removeTLItem(si,bi,ii){slides[si].blocks[bi].items.splice(ii,1);renderBlocks(si);}
+function moveTLItem(si,bi,ii,d){const a=slides[si].blocks[bi].items,ni=ii+d;if(ni<0||ni>=a.length)return;[a[ii],a[ni]]=[a[ni],a[ii]];renderBlocks(si);}
 
 /* ══ SYNTAX HIGHLIGHT (condensed) ══ */
 function highlight(code, lang) {
@@ -1552,7 +1606,63 @@ function renderBlock(b,p,bf){
   if(b.type==='highlight') return `<div class="hl-card" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c2};color:${p.tMain}">${xh(b.content)}</div>`;
   if(b.type==='quote') return `<div class="quote-block" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c1}"><div class="quote-mark" style="color:${p.c1}">❝</div><div class="quote-text" style="color:${p.tMain}">${xh(b.quoteText||'')}</div>${b.quoteAuthor?`<div class="quote-author" style="color:${p.c2}">— ${xh(b.quoteAuthor)}</div>`:''}</div>`;
   if(b.type==='tip') return `<div class="tip-block" style="background:${ha(p.c1,dark?.07:.06)};border-color:${ha(p.c1,.2)}"><div class="tip-icon">${b.tipIcon||'💡'}</div><div><div class="tip-label" style="color:${p.c1}">${xh(b.tipLabel||'DICA')}</div><div class="tip-text" style="color:${p.tMain}">${xh(b.tipText||'')}</div></div></div>`;
-  if(b.type==='stat'){const stats=(b.stats||[]).filter(s=>s.val||s.label);return `<div class="stat-grid">${stats.map(s=>`<div class="stat-card" style="background:${ha(p.c1,dark?.08:.06)};border-color:${ha(p.c1,.2)}"><div class="stat-val" style="color:${p.c1}">${xh(s.val)}</div><div class="stat-label" style="color:${sc}">${xh(s.label)}</div></div>`).join('')}</div>`;}
+  if(b.type==='stat'){
+    const stats=(b.stats||[]).filter(s=>s.val||s.label);
+    return `<div class="stat-grid">${stats.map(s=>{const clr=(s.color&&s.color.trim())?s.color.trim():p.c1;return `<div class="stat-card" style="background:${ha(clr,dark?.08:.06)};border-color:${ha(clr,.2)}"><div class="stat-val" style="color:${clr}">${xh(s.val)}</div><div class="stat-label" style="color:${sc}">${xh(s.label)}</div></div>`;}).join('')}</div>`;
+  }
+  if(b.type==='compare'){
+    const lClr=(b.leftColor&&b.leftColor.trim())?b.leftColor.trim():p.c1;
+    const rClr=(b.rightColor&&b.rightColor.trim())?b.rightColor.trim():'#f87171';
+    const lIco=b.leftIcon||'✓'; const rIco=b.rightIcon||'✕';
+    const lItems=(Array.isArray(b.leftItems)?b.leftItems:(b.leftItems||'').split('\n')).filter(l=>l.trim()).map(l=>`<div class="compare-item"><span style="color:${lClr};font-size:9px">${xh(lIco)}</span><span style="color:${p.tMain}">${xh(l)}</span></div>`).join('');
+    const rItems=(Array.isArray(b.rightItems)?b.rightItems:(b.rightItems||'').split('\n')).filter(l=>l.trim()).map(l=>`<div class="compare-item"><span style="color:${rClr};font-size:9px">${xh(rIco)}</span><span style="color:${sc}">${xh(l)}</span></div>`).join('');
+    return `<div class="compare-wrap"><div class="compare-row"><div class="compare-col" style="background:${ha(lClr,dark?.07:.05)};border-color:${ha(lClr,.2)}"><div class="compare-head" style="color:${lClr}">${xh(b.leftTitle||'✅ Bom')}</div><div class="compare-items">${lItems}</div></div><div class="compare-col" style="background:${ha(rClr,dark?.07:.06)};border-color:${ha(rClr,.2)}"><div class="compare-head" style="color:${rClr}">${xh(b.rightTitle||'❌ Ruim')}</div><div class="compare-items">${rItems}</div></div></div></div>`;
+  }
+  if(b.type==='divider'){
+    const lineClr=ha(p.c1,.3);
+    const label=b.divLabel?`<span class="div-label" style="color:${p.tMuted};padding:0 8px">${xh(b.divLabel)}</span>`:'';
+    return `<div class="divider-block"><div class="div-line" style="background:linear-gradient(to right,transparent,${lineClr})"></div>${label}<div class="div-line" style="background:linear-gradient(to left,transparent,${lineClr})"></div></div>`;
+  }
+  if(b.type==='timeline'){
+    const items=(b.items||[]).filter(it=>it.title||it.date);
+    const orient=b.orient||'vertical'; const align=b.align||'left';
+    if(!items.length) return '';
+    if(orient==='horizontal'){
+      const cells=items.map((it,i)=>{
+        const clr=(it.color&&it.color.trim())?it.color.trim():p.c1;
+        const isLast=i===items.length-1;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;padding:0 2px">
+          <div style="display:flex;width:100%;align-items:center;margin-bottom:5px">
+            <div style="flex:${i===0?0:1};height:2px;background:${i===0?'transparent':ha(clr,.35)}"></div>
+            <div style="width:11px;height:11px;border-radius:50%;background:${clr};border:2px solid ${clr};flex-shrink:0;box-shadow:0 0 5px ${ha(clr,.4)}"></div>
+            <div style="flex:${isLast?0:1};height:2px;background:${isLast?'transparent':ha(clr,.35)}"></div>
+          </div>
+          ${it.date?`<div class="tl-date" style="color:${clr}">${xh(it.date)}</div>`:''}
+          <div class="tl-title" style="color:${p.tMain}">${xh(it.title)}</div>
+          ${it.desc?`<div class="tl-desc" style="color:${sc}">${xh(it.desc)}</div>`:''}
+        </div>`;
+      }).join('');
+      return `<div style="display:flex;width:100%;align-items:flex-start;gap:0">${cells}</div>`;
+    }
+    const rows=items.map((it,i)=>{
+      const clr=(it.color&&it.color.trim())?it.color.trim():p.c1;
+      const isLast=i===items.length-1;
+      const flexDir=align==='right'?'flex-direction:row-reverse':'';
+      const textAlign=align==='right'?'text-align:right':'';
+      return `<div style="display:flex;gap:9px;align-items:flex-start;${flexDir}">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          <div style="width:11px;height:11px;border-radius:50%;background:${clr};border:2px solid ${clr};box-shadow:0 0 5px ${ha(clr,.4)}"></div>
+          ${!isLast?`<div style="width:2px;flex:1;min-height:12px;background:linear-gradient(to bottom,${ha(clr,.5)},${ha(clr,.15)});margin-top:2px"></div>`:''}
+        </div>
+        <div style="flex:1;min-width:0;padding-bottom:${isLast?0:9}px;${textAlign}">
+          ${it.date?`<div class="tl-date" style="color:${clr}">${xh(it.date)}</div>`:''}
+          <div class="tl-title" style="color:${p.tMain}">${xh(it.title)}</div>
+          ${it.desc?`<div class="tl-desc" style="color:${sc}">${xh(it.desc)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div style="display:flex;flex-direction:column;gap:0;width:100%">${rows}</div>`;
+  }
   if(b.type==='code'){const langId=b.lang||'python';const ld=LANGS.find(l=>l.id===langId)||LANGS[0];const cbBg=p.cbBg||(dark?'rgba(0,0,0,.5)':'#F0F0F8');const mf=activeTypo.monoFont||"'Space Mono',monospace";return `<div class="code-block" style="background:${cbBg};border-left-color:${p.c1};font-family:${mf}"><div class="cbh" style="background:${dark?'rgba(0,0,0,.25)':'rgba(0,0,0,.06)'};color:${ld.color}"><div class="cbh-dots"><span></span><span></span><span></span></div><span class="cbh-lang">${ld.icon} ${ld.name}</span></div><pre style="color:${dark?'rgba(240,240,245,.85)':p.tMain};font-family:${mf}">${highlight(b.content||'',langId)}</pre></div>`;}
 
   return '';
@@ -1710,24 +1820,35 @@ async function exportAllReels() {
   const reelEls  = Array.from(document.querySelectorAll('#reelsWrapper .reel'));
   if (!reelEls.length) { alert('Gere as telas primeiro clicando em ▶ Gerar Reels.'); return; }
 
+  const titulo = (document.getElementById('capaTitulo')?.value || 'reel').trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]/gi,'_').toLowerCase().replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const baseName = titulo || 'reel';
+  const total    = reelEls.length;
+  const REEL_W   = 338;
+  const REEL_H   = 600;
+  const EXPORT_SCALE = 3.2;
+
+  // ── Tenta File System Access API (Chrome 86+) ──
+  let dirHandle = null;
+  if (window.showDirectoryPicker) {
+    try {
+      dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'pictures' });
+    } catch(e) {
+      if (e.name === 'AbortError') return; // usuário cancelou
+    }
+  }
+
   btn.disabled = true;
   btn.textContent = '⏳ Exportando…';
   progress.style.display = 'block';
 
-  const titulo = (document.getElementById('capaTitulo')?.value || 'reel').trim().replace(/[^a-z0-9]/gi,'_').toLowerCase();
-  const total  = reelEls.length;
-
-  // Dimensões reais do reel (338×600 no preview = 1080×1920 na exportação via scale)
-  const REEL_W = 338;
-  const REEL_H = 600;
-  // scale=3.2 → 338*3.2≈1082 × 600*3.2=1920 (aprox. 1080×1920 Instagram nativo)
-  const EXPORT_SCALE = 3.2;
-
   for (let i = 0; i < total; i++) {
     const el = reelEls[i];
-    progress.textContent = `Exportando tela ${i + 1} de ${total}…`;
+    const num = String(i + 1).padStart(2, '0');
+    const fileName = `${baseName}_tela_${num}.png`;
+    progress.textContent = `Exportando ${i + 1} de ${total} — ${fileName}`;
 
-    // Neutraliza qualquer transform de escala aplicado pelo modo horizontal
     const origTransform = el.style.transform;
     const origWidth     = el.style.width;
     const origHeight    = el.style.height;
@@ -1737,35 +1858,37 @@ async function exportAllReels() {
 
     try {
       const canvas = await html2canvas(el, {
-        scale: EXPORT_SCALE,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        width: REEL_W,
-        height: REEL_H,
-        logging: false
+        scale: EXPORT_SCALE, useCORS: true, allowTaint: true,
+        backgroundColor: null, width: REEL_W, height: REEL_H, logging: false
       });
 
-      const link    = document.createElement('a');
-      link.download = `${titulo}_tela_${String(i + 1).padStart(2, '0')}.png`;
-      link.href     = canvas.toDataURL('image/png');
-      link.click();
+      if (dirHandle) {
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        const fh   = await dirHandle.getFileHandle(fileName, { create: true });
+        const ws   = await fh.createWritable();
+        await ws.write(blob);
+        await ws.close();
+      } else {
+        const link    = document.createElement('a');
+        link.download = fileName;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+        await new Promise(r => setTimeout(r, 400));
+      }
     } catch(e) {
       console.error('Erro na tela', i + 1, e);
+      progress.textContent = `⚠️ Erro na tela ${i + 1}: ${e.message}`;
     }
 
     el.style.transform = origTransform;
     el.style.width     = origWidth;
     el.style.height    = origHeight;
-
-    // Pausa entre downloads para o browser não bloquear
-    await new Promise(r => setTimeout(r, 400));
   }
 
-  progress.textContent = `✅ ${total} tela${total > 1 ? 's exportadas' : ' exportada'}!`;
+  progress.textContent = `✅ ${total} tela${total > 1 ? 's exportadas' : ' exportada'}! (${baseName}_tela_01 … ${String(total).padStart(2,'0')})`;
   btn.disabled    = false;
   btn.textContent = '⬇ Baixar todas as telas (PNG)';
-  setTimeout(() => { progress.style.display = 'none'; }, 4000);
+  setTimeout(() => { progress.style.display = 'none'; }, 6000);
 }
 
 /* ══ INIT ══ */

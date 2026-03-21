@@ -27,7 +27,10 @@ body:not(.layout-h) .preview-col{display:contents;}
 
 /* ── ACCORDION ── */
 .accordion{width:100%;max-width:820px;display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:16px;overflow:hidden;}
-body.layout-h .accordion{max-width:none;}
+body.layout-h .accordion{max-width:none;overflow:visible;border-radius:12px;}
+body.layout-h .accordion .ac-item:first-child .ac-header{border-radius:12px 12px 0 0;}
+body.layout-h .accordion .ac-item:last-child{border-bottom:none;}
+body.layout-h .accordion .ac-item:last-child .ac-header:not(.open){border-radius:0 0 12px 12px;}
 .ac-item{border-bottom:1px solid var(--border);}
 .ac-item:last-child{border-bottom:none;}
 .ac-header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:var(--surface);cursor:pointer;user-select:none;transition:background .15s;gap:12px;}
@@ -43,8 +46,7 @@ body.layout-h .accordion{max-width:none;}
 /* Body: collapsed = display:none, open = visible */
 .ac-body{display:none;}
 .ac-body.open{display:block;}
-/* In horizontal: panel body fills remaining viewport height after the 4 headers (~220px) */
-body.layout-h .ac-body.open{overflow-y:auto;max-height:calc(100vh - 220px);}
+body.layout-h .ac-body.open .ac-inner{padding-bottom:60px;}
 .ac-inner{padding:20px 22px 24px;background:rgba(0,0,0,.12);display:flex;flex-direction:column;gap:14px;}
 
 /* ── SLIDE ACCORDION (inside content list) ── */
@@ -199,6 +201,16 @@ body.layout-h .slide{transform-origin:top center;}
 .intro-sub{font-size:13px;line-height:1.65;max-width:450px;}
 
 /* CONTENT */
+.hl-card{border-radius:9px;padding:12px 14px;border-left-width:3px;border-left-style:solid;border-width:1px;border-style:solid;font-size:13px;line-height:1.65;}
+/* timeline */
+.tl-date{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;}
+.tl-title{font-size:12px;font-weight:700;line-height:1.3;margin-bottom:2px;}
+.tl-desc{font-size:11px;line-height:1.5;opacity:.8;}
+/* timeline horizontal */
+.tl-h .tl-item{flex-direction:column;align-items:center;text-align:center;flex:1;padding-bottom:0;padding-right:0;}
+.tl-h .tl-connector{flex-direction:row;width:100%;align-items:center;}
+.tl-h .tl-line{width:auto;flex:1;height:2px;min-height:unset;min-width:8px;}
+.tl-h .tl-dot{flex-shrink:0;}
 .c-eyebrow{font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.16em;margin-bottom:6px;}
 .c-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:11px;line-height:1.2;letter-spacing:-.02em;}
 .c-title em{font-style:normal;}
@@ -626,7 +638,7 @@ body.layout-h .slide{transform-origin:top center;}
   </div>
   <div class="slides-wrapper" id="slidesWrapper"></div>
   <div class="xhint" id="exportHint">
-    <div class="xhint-text">💡 Cada slide é exportado como <strong>PNG 600×600px</strong> — pronto para o feed do Instagram.</div>
+    <div class="xhint-text">💡 Cada slide é exportado como <strong>PNG 1200×1200px</strong>. Ao clicar, escolha a pasta de destino — os arquivos serão salvos com o nome do tema + numeração sequencial (<strong>tema_slide_01.png</strong>, <strong>02.png</strong>…).</div>
     <button class="btn-export" id="btnExport" onclick="exportAllSlides()">⬇ Baixar todos os slides (PNG)</button>
     <div class="export-progress" id="exportProgress"></div>
   </div>
@@ -1227,11 +1239,12 @@ const BLOCK_TYPES = [
   { type:'stat',    label:'Estatísticas',badge:'bt-stat',  emoji:'📊' },
   { type:'quote',   label:'Citação',    badge:'bt-quote',  emoji:'💬' },
   { type:'highlight',label:'Destaque',  badge:'bt-hl',     emoji:'💡' },
-  { type:'tip',     label:'Dica/Aviso', badge:'bt-tip',    emoji:'⚠️' },
+  { type:'tip',     label:'Dica',       badge:'bt-tip',    emoji:'⚠️' },
   { type:'compare', label:'Comparar',   badge:'bt-compare',emoji:'⚖️' },
   { type:'image',   label:'Imagem',     badge:'bt-image',  emoji:'🖼️' },
   { type:'code',    label:'Código',     badge:'bt-code',   emoji:'💻' },
   { type:'divider', label:'Divisor',    badge:'bt-divider',emoji:'─'  },
+  { type:'timeline',label:'Linha do Tempo',badge:'bt-timeline',emoji:'🕐'},
 ];
 
 function getBadge(type) { return BLOCK_TYPES.find(b => b.type === type)?.badge || 'bt-text'; }
@@ -1357,6 +1370,10 @@ function renderBlocks(si) {
         ${stats.map((st, si2) => `<div class="row2">
           <div><label>Valor #${si2+1}</label><input type="text" value="${esc(st.val)}" placeholder="ex: 99%" oninput="slides[${si}].blocks[${bi}].stats[${si2}].val=this.value"></div>
           <div><label>Descrição</label><input type="text" value="${esc(st.label)}" placeholder="ex: Uptime" oninput="slides[${si}].blocks[${bi}].stats[${si2}].label=this.value"></div>
+        </div>
+        <div class="row2">
+          <div><label>Cor (deixe vazio = paleta)</label><input type="text" value="${esc(st.color||'')}" placeholder="#ffffff ou vazio" oninput="slides[${si}].blocks[${bi}].stats[${si2}].color=this.value"></div>
+          <div style="display:flex;align-items:flex-end;gap:5px"><input type="color" value="${st.color||'#6366f1'}" oninput="slides[${si}].blocks[${bi}].stats[${si2}].color=this.value" style="width:36px;height:28px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].stats[${si2}].color='';renderBlocks(${si})">↺ Paleta</button></div>
         </div>`).join('')}
         <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addStat(${si},${bi})" ${stats.length>=4?'disabled':''}>+ Adicionar stat</button>
       </div>`;
@@ -1371,12 +1388,67 @@ function renderBlocks(si) {
           <div><label>Título Direita</label><input type="text" value="${esc(right)}" oninput="slides[${si}].blocks[${bi}].rightTitle=this.value"></div>
         </div>
         <div class="row2">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label>Cor Esquerda</label>
+            <div style="display:flex;gap:5px;align-items:center">
+              <input type="color" value="${b.leftColor||'#22c55e'}" oninput="slides[${si}].blocks[${bi}].leftColor=this.value" style="width:36px;height:28px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px">
+              <input type="text" value="${esc(b.leftColor||'')}" placeholder="vazio = paleta" style="flex:1" oninput="slides[${si}].blocks[${bi}].leftColor=this.value">
+              <button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].leftColor=''" title="Usar cor da paleta">↺</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label>Cor Direita</label>
+            <div style="display:flex;gap:5px;align-items:center">
+              <input type="color" value="${b.rightColor||'#f87171'}" oninput="slides[${si}].blocks[${bi}].rightColor=this.value" style="width:36px;height:28px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px">
+              <input type="text" value="${esc(b.rightColor||'')}" placeholder="vazio = paleta" style="flex:1" oninput="slides[${si}].blocks[${bi}].rightColor=this.value">
+              <button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].rightColor=''" title="Usar cor da paleta">↺</button>
+            </div>
+          </div>
+        </div>
+        <div class="row2">
+          <div><label>Ícone Esquerda</label><input type="text" value="${esc(b.leftIcon||'✓')}" style="max-width:70px" oninput="slides[${si}].blocks[${bi}].leftIcon=this.value"></div>
+          <div><label>Ícone Direita</label><input type="text" value="${esc(b.rightIcon||'✕')}" style="max-width:70px" oninput="slides[${si}].blocks[${bi}].rightIcon=this.value"></div>
+        </div>
+        <div class="row2">
           <div><label>Itens esquerda (um/linha)</label><textarea rows="3" oninput="slides[${si}].blocks[${bi}].leftItems=this.value.split('\\n')">${escTA(lItems)}</textarea></div>
           <div><label>Itens direita (um/linha)</label><textarea rows="3" oninput="slides[${si}].blocks[${bi}].rightItems=this.value.split('\\n')">${escTA(rItems)}</textarea></div>
         </div>
       </div>`;
     } else if (b.type === 'divider') {
       inner = `<div style="padding:7px 11px"><label>Texto do divisor (opcional)</label><input type="text" value="${esc(b.divLabel||'')}" placeholder="ou deixe vazio" oninput="slides[${si}].blocks[${bi}].divLabel=this.value"></div>`;
+    } else if (b.type === 'timeline') {
+      const items = b.items || [];
+      const orient = b.orient || 'vertical';
+      const align  = b.align  || 'left';
+      inner = `<div style="padding:8px 11px;display:flex;flex-direction:column;gap:7px">
+        <div class="row2">
+          <div><label>Orientação</label><select oninput="slides[${si}].blocks[${bi}].orient=this.value">
+            <option value="vertical"  ${orient==='vertical' ?'selected':''}>Vertical</option>
+            <option value="horizontal"${orient==='horizontal'?'selected':''}>Horizontal</option>
+          </select></div>
+          <div><label>Alinhamento</label><select oninput="slides[${si}].blocks[${bi}].align=this.value">
+            <option value="left" ${align==='left' ?'selected':''}>Esquerda</option>
+            <option value="right"${align==='right'?'selected':''}>Direita</option>
+          </select></div>
+        </div>
+        ${items.map((it,ii)=>`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;padding:8px 10px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+            <span style="font-size:10px;color:var(--muted);font-weight:700">Evento ${ii+1}</span>
+            <div style="display:flex;gap:3px">
+              ${ii>0?`<button class="btn-reorder" onclick="moveTLItem(${si},${bi},${ii},-1)">↑</button>`:''}
+              ${ii<items.length-1?`<button class="btn-reorder" onclick="moveTLItem(${si},${bi},${ii},1)">↓</button>`:''}
+              <button class="btn btn-danger" style="font-size:10px;padding:2px 7px" onclick="removeTLItem(${si},${bi},${ii})">✕</button>
+            </div>
+          </div>
+          <div class="row2">
+            <div><label>Data / Período</label><input type="text" value="${esc(it.date||'')}" placeholder="2024" oninput="slides[${si}].blocks[${bi}].items[${ii}].date=this.value"></div>
+            <div style="display:flex;flex-direction:column;gap:3px"><label>Cor do ponto</label><div style="display:flex;gap:5px;align-items:center"><input type="color" value="${it.color||'#6366f1'}" oninput="slides[${si}].blocks[${bi}].items[${ii}].color=this.value" style="width:34px;height:26px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].items[${ii}].color=''" title="Cor da paleta">↺ Paleta</button></div></div>
+          </div>
+          <div><label>Título do evento</label><input type="text" value="${esc(it.title||'')}" placeholder="Título" oninput="slides[${si}].blocks[${bi}].items[${ii}].title=this.value"></div>
+          <div><label>Descrição (opcional)</label><input type="text" value="${esc(it.desc||'')}" placeholder="Descrição breve" oninput="slides[${si}].blocks[${bi}].items[${ii}].desc=this.value"></div>
+        </div>`).join('')}
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addTLItem(${si},${bi})">+ Adicionar evento</button>
+      </div>`;
     } else if (b.type === 'image') {
       const imgs = b.images || [];
       // Build per-image free-transform editor cards
@@ -1641,12 +1713,15 @@ function stopMCDrag() {
 }
 
 function addBlock(si, type) {
-  const defaults = { text:{content:''}, list:{content:[]}, steps:{content:[]}, highlight:{content:''}, quote:{quoteText:'',quoteAuthor:''}, tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''}, stat:{stats:[{val:'',label:''},{val:'',label:''}]}, compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]}, image:{images:[]}, code:{lang:'python',content:''}, divider:{divLabel:''} };
+  const defaults = { text:{content:''}, list:{content:[]}, steps:{content:[]}, highlight:{content:''}, quote:{quoteText:'',quoteAuthor:''}, tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''}, stat:{stats:[{val:'',label:''},{val:'',label:''}]}, compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]}, image:{images:[]}, code:{lang:'python',content:''}, divider:{divLabel:''}, timeline:{orient:'vertical',align:'left',items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]} };
   slides[si].blocks.push({ type, ...defaults[type] });
   renderBlocks(si);
 }
 function removeBlock(si, bi) { slides[si].blocks.splice(bi,1); renderBlocks(si); }
 function moveBlock(si, bi, d) { const a=slides[si].blocks,ni=bi+d; if(ni<0||ni>=a.length)return; [a[bi],a[ni]]=[a[ni],a[bi]]; renderBlocks(si); }
+function addTLItem(si,bi){if(!slides[si].blocks[bi].items)slides[si].blocks[bi].items=[];slides[si].blocks[bi].items.push({date:'',title:'',desc:'',color:''});renderBlocks(si);}
+function removeTLItem(si,bi,ii){slides[si].blocks[bi].items.splice(ii,1);renderBlocks(si);}
+function moveTLItem(si,bi,ii,d){const a=slides[si].blocks[bi].items,ni=ii+d;if(ni<0||ni>=a.length)return;[a[ii],a[ni]]=[a[ni],a[ii]];renderBlocks(si);}
 function addSlide() {
   const newIdx = slides.length;
   slides.push({eyebrow:`Tópico #0${slides.length+1}`,title:'Novo tópico',hl:'',blocks:[{type:'text',content:''}]});
@@ -2371,7 +2446,7 @@ function renderBlockHTML(b, p) {
   }
 
   if (b.type === 'highlight') {
-    return `<div class="highlight-card" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c2};color:${p.tMain}">${xh(b.content)}</div>`;
+    return `<div class="hl-card" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c2};color:${p.tMain}">${xh(b.content)}</div>`;
   }
 
   if (b.type === 'quote') {
@@ -2394,26 +2469,33 @@ function renderBlockHTML(b, p) {
 
   if (b.type === 'stat') {
     const stats = (b.stats||[]).filter(s => s.val||s.label);
-    const cards = stats.map(s => `<div class="stat-card" style="background:${ha(p.c1,dark?.08:.06)};border-color:${ha(p.c1,.2)}">
-      <div class="stat-val" style="color:${p.c1}">${xh(s.val)}</div>
+    const cards = stats.map(s => {
+      const clr = (s.color && s.color.trim()) ? s.color.trim() : p.c1;
+      return `<div class="stat-card" style="background:${ha(clr,dark?.08:.06)};border-color:${ha(clr,.2)}">
+      <div class="stat-val" style="color:${clr}">${xh(s.val)}</div>
       <div class="stat-label" style="color:${subClr}">${xh(s.label)}</div>
-    </div>`).join('');
+    </div>`;
+    }).join('');
     return `<div class="stat-grid">${cards}</div>`;
   }
 
   if (b.type === 'compare') {
+    const lClr = (b.leftColor  && b.leftColor.trim())  ? b.leftColor.trim()  : p.c1;
+    const rClr = (b.rightColor && b.rightColor.trim()) ? b.rightColor.trim() : '#f87171';
+    const lIco = b.leftIcon  || '✓';
+    const rIco = b.rightIcon || '✕';
     const lItems = (Array.isArray(b.leftItems)?b.leftItems:(b.leftItems||'').split('\n')).filter(l=>l.trim())
-      .map(l => `<div class="compare-item"><span style="color:${p.c1};font-size:10px">✓</span><span style="color:${p.tMain}">${xh(l)}</span></div>`).join('');
+      .map(l => `<div class="compare-item"><span style="color:${lClr};font-size:10px">${xh(lIco)}</span><span style="color:${p.tMain}">${xh(l)}</span></div>`).join('');
     const rItems = (Array.isArray(b.rightItems)?b.rightItems:(b.rightItems||'').split('\n')).filter(l=>l.trim())
-      .map(l => `<div class="compare-item"><span style="color:#f87171;font-size:10px">✕</span><span style="color:${subClr}">${xh(l)}</span></div>`).join('');
+      .map(l => `<div class="compare-item"><span style="color:${rClr};font-size:10px">${xh(rIco)}</span><span style="color:${subClr}">${xh(l)}</span></div>`).join('');
     return `<div class="compare-wrap">
       <div class="compare-row">
-        <div class="compare-col" style="background:${ha(p.c1,dark?.07:.05)};border-color:${ha(p.c1,.2)}">
-          <div class="compare-head" style="color:${p.c1}">${xh(b.leftTitle||'✅ Bom')}</div>
+        <div class="compare-col" style="background:${ha(lClr,dark?.07:.05)};border-color:${ha(lClr,.2)}">
+          <div class="compare-head" style="color:${lClr}">${xh(b.leftTitle||'✅ Bom')}</div>
           <div class="compare-items">${lItems}</div>
         </div>
-        <div class="compare-col" style="background:${dark?'rgba(248,113,113,.07)':'rgba(248,113,113,.06)'};border-color:rgba(248,113,113,.2)">
-          <div class="compare-head" style="color:#f87171">${xh(b.rightTitle||'❌ Ruim')}</div>
+        <div class="compare-col" style="background:${ha(rClr,dark?.07:.06)};border-color:${ha(rClr,.2)}">
+          <div class="compare-head" style="color:${rClr}">${xh(b.rightTitle||'❌ Ruim')}</div>
           <div class="compare-items">${rItems}</div>
         </div>
       </div>
@@ -2447,6 +2529,50 @@ function renderBlockHTML(b, p) {
 
   // image blocks are rendered as a free-floating layer in makeContentSlide — not inline
   if (b.type === 'image') return '';
+
+  if (b.type === 'timeline') {
+    const items = (b.items||[]).filter(it=>it.title||it.date);
+    const orient = b.orient||'vertical';
+    const align  = b.align||'left';
+    if(!items.length) return '';
+    if(orient==='horizontal'){
+      const cells = items.map((it,i)=>{
+        const clr = (it.color&&it.color.trim())?it.color.trim():p.c1;
+        const isLast = i===items.length-1;
+        return `<div class="tl-item" style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;padding:0 2px">
+          <div style="display:flex;width:100%;align-items:center;margin-bottom:6px">
+            <div style="flex:${i===0?0:1};height:2px;background:${i===0?'transparent':ha(clr,.35)}"></div>
+            <div style="width:12px;height:12px;border-radius:50%;background:${clr};border:2px solid ${clr};flex-shrink:0;box-shadow:0 0 6px ${ha(clr,.4)}"></div>
+            <div style="flex:${isLast?0:1};height:2px;background:${isLast?'transparent':ha(clr,.35)}"></div>
+          </div>
+          ${it.date?`<div class="tl-date" style="color:${clr}">${xh(it.date)}</div>`:''}
+          <div class="tl-title" style="color:${p.tMain}">${xh(it.title)}</div>
+          ${it.desc?`<div class="tl-desc" style="color:${subClr}">${xh(it.desc)}</div>`:''}
+        </div>`;
+      }).join('');
+      return `<div style="display:flex;width:100%;align-items:flex-start;gap:0">${cells}</div>`;
+    }
+    // vertical
+    const rows = items.map((it,i)=>{
+      const clr = (it.color&&it.color.trim())?it.color.trim():p.c1;
+      const isLast = i===items.length-1;
+      const textAlign = align==='right'?'text-align:right':'';
+      const flexDir   = align==='right'?'flex-direction:row-reverse':'';
+      return `<div style="display:flex;gap:10px;align-items:flex-start;${flexDir}">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          <div style="width:12px;height:12px;border-radius:50%;background:${clr};border:2px solid ${clr};box-shadow:0 0 6px ${ha(clr,.4)}"></div>
+          ${!isLast?`<div style="width:2px;flex:1;min-height:14px;background:linear-gradient(to bottom,${ha(clr,.5)},${ha(clr,.15)});margin-top:2px"></div>`:''}
+        </div>
+        <div style="flex:1;min-width:0;padding-bottom:${isLast?0:10}px;${textAlign}">
+          ${it.date?`<div class="tl-date" style="color:${clr}">${xh(it.date)}</div>`:''}
+          <div class="tl-title" style="color:${p.tMain}">${xh(it.title)}</div>
+          ${it.desc?`<div class="tl-desc" style="color:${subClr}">${xh(it.desc)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    const justifyMap = {left:'flex-start',center:'center',right:'flex-end'};
+    return `<div style="display:flex;flex-direction:column;gap:0;width:100%">${rows}</div>`;
+  }
 
   return '';
 }
@@ -2716,21 +2842,34 @@ async function exportAllSlides() {
   const slideEls = Array.from(document.querySelectorAll('#slidesWrapper .slide'));
   if (!slideEls.length) { alert('Gere os slides primeiro clicando em ▶ Gerar Slides.'); return; }
 
+  const topic = (document.getElementById('postTopic')?.value || 'post').trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]/gi,'_').toLowerCase().replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const baseName = topic || 'post';
+  const total    = slideEls.length;
+  const EXPORT_SCALE = 2;
+  const SLIDE_SIZE   = 600;
+
+  // ── Tenta File System Access API (Chrome 86+) ──
+  let dirHandle = null;
+  if (window.showDirectoryPicker) {
+    try {
+      dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'pictures' });
+    } catch(e) {
+      if (e.name === 'AbortError') return; // usuário cancelou
+    }
+  }
+
   btn.disabled = true;
   btn.textContent = '⏳ Exportando…';
   progress.style.display = 'block';
 
-  const topic = (document.getElementById('postTopic')?.value || 'slide').trim().replace(/[^a-z0-9]/gi,'_').toLowerCase();
-  const total = slideEls.length;
-  // scale=2 → 1200×1200px output (Instagram aceita até 1080×1080, mantém qualidade)
-  const EXPORT_SCALE = 2;
-  const SLIDE_SIZE   = 600;
-
   for (let i = 0; i < total; i++) {
     const el = slideEls[i];
-    progress.textContent = `Exportando slide ${i + 1} de ${total}…`;
+    const num = String(i + 1).padStart(2, '0');
+    const fileName = `${baseName}_slide_${num}.png`;
+    progress.textContent = `Exportando ${i + 1} de ${total} — ${fileName}`;
 
-    // Neutraliza transform de escala e força dimensões nativas
     const origTransform = el.style.transform;
     const origWidth     = el.style.width;
     const origHeight    = el.style.height;
@@ -2740,35 +2879,39 @@ async function exportAllSlides() {
 
     try {
       const canvas = await html2canvas(el, {
-        scale: EXPORT_SCALE,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        width: SLIDE_SIZE,
-        height: SLIDE_SIZE,
-        logging: false
+        scale: EXPORT_SCALE, useCORS: true, allowTaint: true,
+        backgroundColor: null, width: SLIDE_SIZE, height: SLIDE_SIZE, logging: false
       });
 
-      const link    = document.createElement('a');
-      link.download = `${topic}_slide_${String(i + 1).padStart(2, '0')}.png`;
-      link.href     = canvas.toDataURL('image/png');
-      link.click();
+      if (dirHandle) {
+        // Salva diretamente na pasta escolhida
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        const fh   = await dirHandle.getFileHandle(fileName, { create: true });
+        const ws   = await fh.createWritable();
+        await ws.write(blob);
+        await ws.close();
+      } else {
+        // Fallback: download padrão do browser
+        const link    = document.createElement('a');
+        link.download = fileName;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+        await new Promise(r => setTimeout(r, 400));
+      }
     } catch(e) {
       console.error('Erro no slide', i + 1, e);
+      progress.textContent = `⚠️ Erro no slide ${i + 1}: ${e.message}`;
     }
 
     el.style.transform = origTransform;
     el.style.width     = origWidth;
     el.style.height    = origHeight;
-
-    // Pausa entre downloads para o browser não bloquear
-    await new Promise(r => setTimeout(r, 400));
   }
 
-  progress.textContent = `✅ ${total} slide${total > 1 ? 's exportados' : ' exportado'}!`;
+  progress.textContent = `✅ ${total} slide${total > 1 ? 's exportados' : ' exportado'}! (${baseName}_slide_01 … ${String(total).padStart(2,'0')})`;
   btn.disabled    = false;
   btn.textContent = '⬇ Baixar todos os slides (PNG)';
-  setTimeout(() => { progress.style.display = 'none'; }, 4000);
+  setTimeout(() => { progress.style.display = 'none'; }, 6000);
 }
 
 /* ══ INIT ══ */
