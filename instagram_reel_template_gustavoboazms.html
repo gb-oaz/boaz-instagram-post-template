@@ -244,6 +244,52 @@ body.layout-h .reels-wrapper{gap:16px;}
 .img-thumb{position:relative;width:46px;height:46px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
 .img-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .rm-img{position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;font-size:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
+/* ── FREE-TRANSFORM IMAGE LAYER ── */
+.img-layer{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
+.img-free{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-free img{display:block;width:100%;height:auto;pointer-events:none;user-select:none;}
+/* ── FREE-TRANSFORM EDITOR ── */
+.img-transform-list{display:flex;flex-direction:column;gap:7px;margin-top:7px;}
+.img-transform-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+.img-transform-header{display:flex;align-items:center;gap:7px;padding:5px 9px;border-bottom:1px solid var(--border);}
+.img-transform-header span{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;flex:1;}
+.img-canvas-wrap{padding:8px;display:flex;gap:8px;align-items:flex-start;}
+.img-mini-canvas{position:relative;width:110px;height:82px;border-radius:7px;overflow:hidden;background:rgba(255,255,255,.06);border:2px solid var(--border);flex-shrink:0;cursor:move;user-select:none;}
+.img-mini-canvas:hover{border-color:var(--accent);}
+.img-mini-canvas .mc-img{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-mini-canvas .mc-img img{display:block;width:100%;height:auto;}
+.img-mini-canvas .mc-handle-resize{position:absolute;bottom:3px;right:3px;width:11px;height:11px;border-radius:3px;background:var(--accent);cursor:se-resize;z-index:10;opacity:.85;}
+.img-mini-canvas .mc-handle-rotate{position:absolute;top:3px;right:3px;width:11px;height:11px;border-radius:50%;background:var(--accent2);cursor:grab;z-index:10;opacity:.85;display:flex;align-items:center;justify-content:center;font-size:7px;color:#000;}
+.img-transform-controls{flex:1;display:flex;flex-direction:column;gap:6px;}
+.img-transform-controls label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:1px;}
+.img-ctrl-row{display:flex;gap:4px;align-items:center;}
+.img-ctrl-row input[type=range]{flex:1;accent-color:var(--accent);height:4px;cursor:pointer;}
+.img-ctrl-val{font-size:9px;color:var(--muted);min-width:30px;text-align:right;}
+.img-btn-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px;}
+.img-mini-btn{font-size:9px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;line-height:1.4;}
+.img-mini-btn:hover{color:var(--text);background:rgba(255,255,255,.1);}
+.img-transform-rm{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:5px;font-size:9px;padding:2px 6px;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1;}
+.img-transform-rm:hover{background:rgba(239,68,68,.3);}
+/* ── IMAGE TRANSFORM EDITOR ── */
+.img-transform-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.img-transform-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.img-transform-header{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);}
+.img-transform-header span{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;flex:1;}
+.img-transform-body{display:flex;gap:10px;padding:8px;align-items:flex-start;}
+.img-drag-canvas{position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;cursor:move;flex-shrink:0;border:2px solid var(--border);background:#111;user-select:none;}
+.img-drag-canvas:hover{border-color:var(--accent);}
+.img-drag-canvas img{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-drag-canvas .drag-crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;pointer-events:none;z-index:3;opacity:.7;}
+.img-drag-canvas .drag-crosshair::before,.img-drag-canvas .drag-crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.8);}
+.img-drag-canvas .drag-crosshair::before{width:1px;height:100%;left:50%;top:0;}
+.img-drag-canvas .drag-crosshair::after{height:1px;width:100%;top:50%;left:0;}
+.img-transform-controls{flex:1;display:flex;flex-direction:column;gap:6px;}
+.img-transform-controls label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:0;}
+.img-zoom-slider{width:100%;accent-color:var(--accent);cursor:pointer;height:4px;}
+.img-reset-btn{font-size:10px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;width:100%;text-align:center;}
+.img-reset-btn:hover{color:var(--text);background:rgba(255,255,255,.1);}
+.img-transform-rm{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:5px;font-size:9px;padding:2px 6px;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1;}
+.img-transform-rm:hover{background:rgba(239,68,68,.3);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -883,41 +929,63 @@ function renderBlocks(si){
       if(!b.stats) slides[si].blocks[bi].stats=stats;
       inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px">${stats.map((st,si2)=>`<div class="row2"><div><label>Valor #${si2+1}</label><input type="text" value="${esc(st.val)}" placeholder="99%" oninput="slides[${si}].blocks[${bi}].stats[${si2}].val=this.value"></div><div><label>Label</label><input type="text" value="${esc(st.label)}" placeholder="Uptime" oninput="slides[${si}].blocks[${bi}].stats[${si2}].label=this.value"></div></div>`).join('')}<button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addStat(${si},${bi})" ${stats.length>=4?'disabled':''}>+ Stat</button></div>`;
     } else if(b.type==='image'){
-      const layout=b.layout||'1'; const shape=b.shape||'square'; const arrange=b.arrange||'grid';
-      const maxImgs=parseInt(layout); const imgs=b.images||[];
-      const layouts=[{v:'1',label:'1',icon:'▪'},{v:'2',label:'2',icon:'▪▪'},{v:'3',label:'3',icon:'▪▪▪'},{v:'4',label:'4',icon:'▪▪▪▪'}];
-      const shapes=[{v:'square',label:'Quadrado'},{v:'portrait',label:'Retrato'},{v:'wide',label:'Paisagem'},{v:'circle',label:'Círculo'}];
-      const arrangements=[
-        {v:'grid',label:'Grade',desc:'lado a lado'},
-        {v:'stack',label:'Empilhado',desc:'um abaixo do outro'},
-        {v:'mosaic',label:'Mosaico',desc:'1 grande + pequenas'},
-        {v:'scattered-fan',label:'Leque',desc:'sobrepostos em leque'},
-        {v:'scattered-pile',label:'Pilha',desc:'empilhados tortos'},
-        {v:'scattered-spread',label:'Espalhado',desc:'dispersos em área'},
-        {v:'strip',label:'Tira',desc:'horizontal estreita'},
-      ];
-      const thumbsHtml=imgs.map((img,ii)=>`<div class="img-thumb"><img src="${img}" alt=""><button class="rm-img" onclick="removeImgReel(${si},${bi},${ii})">✕</button></div>`).join('');
-      const uploadDisabled=imgs.length>=maxImgs?'style="opacity:.4;pointer-events:none"':'';
+      const imgs=b.images||[];
+      const transformCards=imgs.map((img,ii)=>{
+        const imgSrc=typeof img==='string'?img:img.src;
+        const ix=typeof img==='object'?(img.x||50):50;
+        const iy=typeof img==='object'?(img.y||50):50;
+        const iw=typeof img==='object'?(img.w||50):50;
+        const rot=typeof img==='object'?(img.rot||0):0;
+        return `<div class="img-transform-card" id="itc-${si}-${bi}-${ii}">
+          <div class="img-transform-header">
+            <span>Imagem ${ii+1}</span>
+            <div style="display:flex;gap:3px;align-items:center">
+              ${ii>0?`<button class="img-mini-btn" onclick="moveImgLayerReel(${si},${bi},${ii},-1)">↑</button>`:''}
+              ${ii<imgs.length-1?`<button class="img-mini-btn" onclick="moveImgLayerReel(${si},${bi},${ii},1)">↓</button>`:''}
+              <button class="img-transform-rm" onclick="removeImgReel(${si},${bi},${ii})">✕</button>
+            </div>
+          </div>
+          <div class="img-canvas-wrap">
+            <div class="img-mini-canvas" id="imc-${si}-${bi}-${ii}"
+              onmousedown="startMCDragReel(event,${si},${bi},${ii},'move')"
+              ontouchstart="startMCDragTouchReel(event,${si},${bi},${ii},'move')">
+              <div class="mc-img" id="mcimg-${si}-${bi}-${ii}"
+                style="width:${iw}%;left:${ix}%;top:${iy}%;transform:translate(-50%,-50%) rotate(${rot}deg);">
+                <img src="${imgSrc}" style="display:block;width:100%;height:auto;">
+              </div>
+              <div class="mc-handle-resize" onmousedown="startMCDragReel(event,${si},${bi},${ii},'resize')" ontouchstart="startMCDragTouchReel(event,${si},${bi},${ii},'resize')"></div>
+              <div class="mc-handle-rotate" onmousedown="startMCDragReel(event,${si},${bi},${ii},'rotate')" ontouchstart="startMCDragTouchReel(event,${si},${bi},${ii},'rotate')">↻</div>
+            </div>
+            <div class="img-transform-controls">
+              <div><label>Tamanho</label>
+                <div class="img-ctrl-row">
+                  <input type="range" min="5" max="100" value="${Math.round(iw)}" oninput="setImgPropReel(${si},${bi},${ii},'w',+this.value)">
+                  <span class="img-ctrl-val">${Math.round(iw)}%</span>
+                </div>
+              </div>
+              <div><label>Rotação</label>
+                <div class="img-ctrl-row">
+                  <input type="range" min="-180" max="180" value="${Math.round(rot)}" oninput="setImgPropReel(${si},${bi},${ii},'rot',+this.value)">
+                  <span class="img-ctrl-val">${Math.round(rot)}°</span>
+                </div>
+              </div>
+              <div class="img-btn-row">
+                <button class="img-mini-btn" onclick="setImgPropReel(${si},${bi},${ii},'rot',0)">↺ 0°</button>
+                <button class="img-mini-btn" onclick="setImgPropReel(${si},${bi},${ii},'x',50);setImgPropReel(${si},${bi},${ii},'y',50)">⊙ Centro</button>
+                <button class="img-mini-btn" onclick="resetImgTransformReel(${si},${bi},${ii})">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
       inner=`<div style="padding:8px 11px;display:flex;flex-direction:column;gap:9px">
-        <div class="row2">
-          <div><label>Quantidade</label>
-            <div class="img-layout-row">${layouts.map(l=>`<button class="img-layout-btn${layout===l.v?' active':''}" onclick="setImgLayoutReel(${si},${bi},'${l.v}')">${l.icon} ${l.label}</button>`).join('')}</div>
-          </div>
-          <div><label>Formato</label>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${shapes.map(s=>`<button class="img-layout-btn${shape===s.v?' active':''}" onclick="setImgShapeReel(${si},${bi},'${s.v}')">${s.label}</button>`).join('')}</div>
-          </div>
-        </div>
-        <div><label>Arranjo</label>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${arrangements.map(a=>`<button class="img-layout-btn${arrange===a.v?' active':''}" onclick="setImgArrangeReel(${si},${bi},'${a.v}')" title="${a.desc}">${a.label}</button>`).join('')}</div>
-        </div>
-        <div><label>Imagens (${imgs.length}/${maxImgs})</label>
-          <div class="img-upload-zone" ${uploadDisabled}>
+        <div><label>Adicionar imagens</label>
+          <div class="img-upload-zone">
             <input type="file" accept="image/*" multiple onchange="handleImgUploadReel(event,${si},${bi})">
-            <div class="uz-label"><strong>📁 Clique para adicionar imagens</strong>${maxImgs-imgs.length>0?`${maxImgs-imgs.length} restante(s)`:'Limite atingido'}</div>
+            <div class="uz-label"><strong>📁 Clique para adicionar imagens</strong>Posicione livremente no slide</div>
           </div>
-          ${thumbsHtml?`<div class="img-preview-strip">${thumbsHtml}</div>`:''}
+          ${transformCards?`<div class="img-transform-list">${transformCards}</div>`:''}
         </div>
-        <div><label>Legenda (opcional)</label><input type="text" value="${esc(b.caption||'')}" placeholder="Legenda abaixo das imagens..." oninput="slides[${si}].blocks[${bi}].caption=this.value"></div>
       </div>`;
     } else if(b.type==='code'){
       const langOpts=LANGS.map(l=>`<option value="${l.id}" ${(b.lang||'python')===l.id?'selected':''}>${l.icon} ${l.name}</option>`).join('');
@@ -940,26 +1008,72 @@ function renderBlocks(si){
 
 function addStat(si,bi){if(!slides[si].blocks[bi].stats)slides[si].blocks[bi].stats=[];if(slides[si].blocks[bi].stats.length<4){slides[si].blocks[bi].stats.push({val:'',label:''});renderBlocks(si);}}
 
+// ── FREE-TRANSFORM IMAGE SYSTEM (REEL) ───────────────────────────────────
+function getImgObjReel(si,bi,ii){
+  const img=slides[si].blocks[bi].images[ii];
+  if(typeof img==='string'){slides[si].blocks[bi].images[ii]={src:img,x:50,y:50,w:50,rot:0};}
+  else if(img&&(img.scale!==undefined||(img.x!==undefined&&img.x<=1))){slides[si].blocks[bi].images[ii]={src:img.src||img,x:50,y:50,w:50,rot:0};}
+  return slides[si].blocks[bi].images[ii];
+}
 function handleImgUploadReel(event,si,bi){
   const files=Array.from(event.target.files);
   const b=slides[si].blocks[bi];
   if(!b.images)b.images=[];
-  const maxImgs=parseInt(b.layout||'1');
-  const remaining=maxImgs-b.images.length;
-  const toLoad=files.slice(0,remaining);
   let loaded=0;
-  toLoad.forEach(file=>{
+  files.forEach(file=>{
     const reader=new FileReader();
-    reader.onload=e=>{b.images.push(e.target.result);loaded++;if(loaded===toLoad.length){renderBlocks(si);renderReels();}};
+    reader.onload=e=>{b.images.push({src:e.target.result,x:50,y:50,w:50,rot:0});loaded++;if(loaded===files.length){renderBlocks(si);renderReels();}};
     reader.readAsDataURL(file);
   });
 }
 function removeImgReel(si,bi,ii){slides[si].blocks[bi].images.splice(ii,1);renderBlocks(si);renderReels();}
-function setImgLayoutReel(si,bi,val){const b=slides[si].blocks[bi];b.layout=val;const max=parseInt(val);if(b.images&&b.images.length>max)b.images=b.images.slice(0,max);renderBlocks(si);renderReels();}
-function setImgShapeReel(si,bi,val){slides[si].blocks[bi].shape=val;renderBlocks(si);renderReels();}
-function setImgArrangeReel(si,bi,val){slides[si].blocks[bi].arrange=val;renderBlocks(si);renderReels();}
+function moveImgLayerReel(si,bi,ii,dir){const imgs=slides[si].blocks[bi].images;const ni=ii+dir;if(ni<0||ni>=imgs.length)return;[imgs[ii],imgs[ni]]=[imgs[ni],imgs[ii]];renderBlocks(si);renderReels();}
+function setImgPropReel(si,bi,ii,prop,val){
+  const img=getImgObjReel(si,bi,ii);img[prop]=val;
+  updateMiniCanvasReel(si,bi,ii);renderReels();
+  const card=document.getElementById(`itc-${si}-${bi}-${ii}`);
+  if(card){card.querySelectorAll('input[type=range]').forEach(inp=>{const sp=inp.closest('.img-ctrl-row')?.querySelector('.img-ctrl-val');if(sp)sp.textContent=inp.max==180?`${Math.round(inp.value)}°`:`${Math.round(inp.value)}%`;});}
+}
+function resetImgTransformReel(si,bi,ii){const img=getImgObjReel(si,bi,ii);img.x=50;img.y=50;img.w=50;img.rot=0;renderBlocks(si);renderReels();}
+function updateMiniCanvasReel(si,bi,ii){
+  const img=getImgObjReel(si,bi,ii);
+  const mc=document.getElementById(`mcimg-${si}-${bi}-${ii}`);
+  if(mc){mc.style.left=`${img.x}%`;mc.style.top=`${img.y}%`;mc.style.width=`${img.w}%`;mc.style.transform=`translate(-50%,-50%) rotate(${img.rot}deg)`;}
+}
+let _mcR=null;
+function startMCDragReel(e,si,bi,ii,mode){
+  e.preventDefault();e.stopPropagation();
+  const img=getImgObjReel(si,bi,ii);
+  const el=document.getElementById(`imc-${si}-${bi}-${ii}`);
+  const rect=el?el.getBoundingClientRect():null;
+  _mcR={si,bi,ii,mode,startX:e.clientX,startY:e.clientY,ox:img.x,oy:img.y,ow:img.w,orot:img.rot,rect};
+  document.addEventListener('mousemove',onMCDragReel);document.addEventListener('mouseup',stopMCDragReel);
+}
+function startMCDragTouchReel(e,si,bi,ii,mode){
+  e.preventDefault();e.stopPropagation();
+  const t=e.touches[0];const img=getImgObjReel(si,bi,ii);
+  const el=document.getElementById(`imc-${si}-${bi}-${ii}`);
+  const rect=el?el.getBoundingClientRect():null;
+  _mcR={si,bi,ii,mode,startX:t.clientX,startY:t.clientY,ox:img.x,oy:img.y,ow:img.w,orot:img.rot,rect};
+  document.addEventListener('touchmove',onMCDragTouchReel,{passive:false});document.addEventListener('touchend',stopMCDragReel);
+}
+function onMCDragReel(e){if(!_mcR)return;applyMCDragReel(e.clientX,e.clientY);}
+function onMCDragTouchReel(e){e.preventDefault();if(!_mcR)return;applyMCDragReel(e.touches[0].clientX,e.touches[0].clientY);}
+function applyMCDragReel(cx,cy){
+  const{si,bi,ii,mode,startX,startY,ox,oy,ow,orot,rect}=_mcR;
+  if(!rect)return;
+  const img=getImgObjReel(si,bi,ii);
+  const W=rect.width,H=rect.height,dx=cx-startX,dy=cy-startY;
+  if(mode==='move'){img.x=Math.max(0,Math.min(100,ox+(dx/W)*100));img.y=Math.max(0,Math.min(100,oy+(dy/H)*100));}
+  else if(mode==='resize'){img.w=Math.max(5,Math.min(100,ow+(dx-dy)/Math.max(W,H)*100));}
+  else if(mode==='rotate'){const cx0=rect.left+W/2,cy0=rect.top+H/2;img.rot=Math.round(orot+(Math.atan2(cy-cy0,cx-cx0)-Math.atan2(startY-cy0,startX-cx0))*180/Math.PI);}
+  updateMiniCanvasReel(si,bi,ii);renderReels();
+  const card=document.getElementById(`itc-${si}-${bi}-${ii}`);
+  if(card){const sliders=card.querySelectorAll('input[type=range]');sliders.forEach(s=>{const sp=s.closest('.img-ctrl-row')?.querySelector('.img-ctrl-val');if(s.max==100&&s.min==5){s.value=img.w;if(sp)sp.textContent=`${Math.round(img.w)}%`;}if(s.max==180){s.value=img.rot;if(sp)sp.textContent=`${Math.round(img.rot)}°`;}});}
+}
+function stopMCDragReel(){_mcR=null;document.removeEventListener('mousemove',onMCDragReel);document.removeEventListener('mouseup',stopMCDragReel);document.removeEventListener('touchmove',onMCDragTouchReel);document.removeEventListener('touchend',stopMCDragReel);}
 
-function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},image:{images:[],layout:'1',shape:'square',arrange:'grid',caption:''},code:{lang:'python',content:''}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
+function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},image:{images:[]},code:{lang:'python',content:''}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
 function removeBlock(si,bi){slides[si].blocks.splice(bi,1);renderBlocks(si);}
 function moveBlock(si,bi,d){const a=slides[si].blocks,ni=bi+d;if(ni<0||ni>=a.length)return;[a[bi],a[ni]]=[a[ni],a[bi]];renderBlocks(si);}
 
@@ -1405,17 +1519,24 @@ function makeCoverReel(titulo,categoria,subtitulo,cur,total,p){
 function makeContentReel(s,categoria,cur,total,p){
   const ww=wd(); const dark=isDark(p);
   const tf=activeTypo.titleFont, bf=activeTypo.bodyFont;
-  const onlyImages=s.blocks.length>0&&s.blocks.every(b=>b.type==='image');
-  const bodyHtml=s.blocks.map(b=>renderBlock(b,p,bf)).join('');
+  const textBlocks=s.blocks.filter(b=>b.type!=='image');
+  const imgBlocks=s.blocks.filter(b=>b.type==='image');
+  const bodyHtml=textBlocks.map(b=>renderBlock(b,p,bf)).join('');
+  const hasText=textBlocks.length>0;
+  const imgLayerHtml=imgBlocks.flatMap(b=>(b.images||[]).map(img=>{
+    const io=typeof img==='string'?{src:img,x:50,y:50,w:50,rot:0}:img;
+    return `<div class="img-free" style="left:${io.x}%;top:${io.y}%;width:${io.w}%;transform:translate(-50%,-50%) rotate(${io.rot||0}deg);"><img src="${io.src}" style="display:block;width:100%;height:auto;"></div>`;
+  })).join('');
   ww.innerHTML=`
   <div class="reel" style="background:${p.bg}">
     ${makeReelBase(p)}
     ${makeReelHdr(categoria,p)}
-    <div class="reel-body-content" style="${onlyImages?'justify-content:center;align-items:center;':''}">
-      ${onlyImages?'':`<div class="reel-eyebrow" style="color:${p.c2}">${xh(s.eyebrow)}</div>
-      <div class="reel-title" style="font-family:${tf};font-size:20px;color:${p.tMain}">${applyHL(s.title,s.hl,p.c1)}</div>`}
-      <div class="reel-body-text" style="color:${p.tSub};font-family:${bf};${onlyImages?'flex:unset;width:100%':''}">${bodyHtml}</div>
+    <div class="reel-body-content">
+      ${hasText?`<div class="reel-eyebrow" style="color:${p.c2}">${xh(s.eyebrow)}</div>
+      <div class="reel-title" style="font-family:${tf};font-size:20px;color:${p.tMain}">${applyHL(s.title,s.hl,p.c1)}</div>
+      <div class="reel-body-text" style="color:${p.tSub};font-family:${bf}">${bodyHtml}</div>`:''}
     </div>
+    ${imgLayerHtml?`<div class="img-layer">${imgLayerHtml}</div>`:''}
     ${makeReelFtr(cur,total,p)}
   </div>
   <div class="snum">Tela ${cur} — Conteúdo</div>`;
@@ -1424,6 +1545,7 @@ function makeContentReel(s,categoria,cur,total,p){
 
 function renderBlock(b,p,bf){
   const dark=isDark(p); const sc=p.tSub;
+  if(b.type==='image') return ''; // images render in img-layer
   if(b.type==='text') return `<p style="color:${sc}">${xh(b.content)}</p>`;
   if(b.type==='list'){const items=(Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim()).map(l=>`<li><span class="li-dot" style="color:${p.c1}">▹</span><span style="color:${sc}">${xh(l)}</span></li>`).join('');return `<ul>${items}</ul>`;}
   if(b.type==='steps'){const items=(Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim());return `<div class="steps-wrap">${items.map((l,i)=>`<div class="step-row"><div class="step-num" style="background:${ha(p.c1,.15)};color:${p.c1};border:1px solid ${ha(p.c1,.3)}">${i+1}</div><div class="step-text" style="color:${sc}">${xh(l)}</div></div>`).join('')}</div>`;}
@@ -1432,139 +1554,6 @@ function renderBlock(b,p,bf){
   if(b.type==='tip') return `<div class="tip-block" style="background:${ha(p.c1,dark?.07:.06)};border-color:${ha(p.c1,.2)}"><div class="tip-icon">${b.tipIcon||'💡'}</div><div><div class="tip-label" style="color:${p.c1}">${xh(b.tipLabel||'DICA')}</div><div class="tip-text" style="color:${p.tMain}">${xh(b.tipText||'')}</div></div></div>`;
   if(b.type==='stat'){const stats=(b.stats||[]).filter(s=>s.val||s.label);return `<div class="stat-grid">${stats.map(s=>`<div class="stat-card" style="background:${ha(p.c1,dark?.08:.06)};border-color:${ha(p.c1,.2)}"><div class="stat-val" style="color:${p.c1}">${xh(s.val)}</div><div class="stat-label" style="color:${sc}">${xh(s.label)}</div></div>`).join('')}</div>`;}
   if(b.type==='code'){const langId=b.lang||'python';const ld=LANGS.find(l=>l.id===langId)||LANGS[0];const cbBg=p.cbBg||(dark?'rgba(0,0,0,.5)':'#F0F0F8');const mf=activeTypo.monoFont||"'Space Mono',monospace";return `<div class="code-block" style="background:${cbBg};border-left-color:${p.c1};font-family:${mf}"><div class="cbh" style="background:${dark?'rgba(0,0,0,.25)':'rgba(0,0,0,.06)'};color:${ld.color}"><div class="cbh-dots"><span></span><span></span><span></span></div><span class="cbh-lang">${ld.icon} ${ld.name}</span></div><pre style="color:${dark?'rgba(240,240,245,.85)':p.tMain};font-family:${mf}">${highlight(b.content||'',langId)}</pre></div>`;}
-
-  if(b.type==='image'){
-    const imgs=(b.images||[]).filter(s=>s);
-    const shape=b.shape||'square';
-    const arrange=b.arrange||'grid';
-    const caption=b.caption||'';
-    const n=imgs.length;
-    if(!n) return `<div style="border:2px dashed ${p.bdr};border-radius:10px;height:80px;display:flex;align-items:center;justify-content:center;color:${p.tMuted};font-size:12px">🖼️ Nenhuma imagem adicionada</div>`;
-
-    const brMap={square:'8px',portrait:'10px',wide:'6px',circle:'50%'};
-    const br=brMap[shape]||'8px';
-    const arMap={square:'1/1',portrait:'4/5',wide:'16/9',circle:'1/1'};
-    const ar=arMap[shape]||'1/1';
-    // Reel width inside padding = 338 - 44 = 294px usable
-    const imgBase=`width:100%;height:100%;object-fit:cover;border-radius:${br};display:block;`;
-    const cell=(src,extraC='',extraI='')=>
-      `<div style="aspect-ratio:${ar};overflow:hidden;border-radius:${br};flex-shrink:0;${extraC}"><img src="${src}" style="${imgBase}${extraI}"></div>`;
-    const circleSize=n===1?160:n===2?120:n<=4?100:85;
-
-    let grid='';
-
-    // ── GRADE ──────────────────────────────────────────────────────
-    if(arrange==='grid'){
-      if(shape==='circle'){
-        const cs=circleSize;
-        const cCells=imgs.map(s=>`<div style="width:${cs}px;height:${cs}px;border-radius:50%;overflow:hidden;flex-shrink:0;"><img src="${s}" style="${imgBase}"></div>`).join('');
-        grid=`<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center">${cCells}</div>`;
-      } else if(n===1){
-        grid=`<div style="width:100%">${cell(imgs[0])}</div>`;
-      } else if(n===2){
-        grid=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${imgs.map(s=>cell(s)).join('')}</div>`;
-      } else if(n===3){
-        grid=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">${imgs.map(s=>cell(s)).join('')}</div>`;
-      } else {
-        grid=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${imgs.map(s=>cell(s)).join('')}</div>`;
-      }
-    }
-
-    // ── EMPILHADO ──────────────────────────────────────────────────
-    else if(arrange==='stack'){
-      if(shape==='circle'){
-        const cs=circleSize;
-        const cCells=imgs.map(s=>`<div style="width:${cs}px;height:${cs}px;border-radius:50%;overflow:hidden;margin:0 auto;"><img src="${s}" style="${imgBase}"></div>`).join('');
-        grid=`<div style="display:flex;flex-direction:column;gap:7px;align-items:center">${cCells}</div>`;
-      } else {
-        const stackW=shape==='portrait'?'70%':'100%';
-        const cells=imgs.map(s=>`<div style="width:${stackW};margin:0 auto">${cell(s)}</div>`).join('');
-        grid=`<div style="display:flex;flex-direction:column;gap:5px">${cells}</div>`;
-      }
-    }
-
-    // ── MOSAICO ────────────────────────────────────────────────────
-    else if(arrange==='mosaic'){
-      if(n===1){
-        grid=`<div style="width:100%">${cell(imgs[0])}</div>`;
-      } else if(shape==='circle'){
-        const big=circleSize+30; const sm=circleSize-20;
-        const smalls=imgs.slice(1).map(s=>`<div style="width:${sm}px;height:${sm}px;border-radius:50%;overflow:hidden;"><img src="${s}" style="${imgBase}"></div>`).join('');
-        grid=`<div style="display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap"><div style="width:${big}px;height:${big}px;border-radius:50%;overflow:hidden;flex-shrink:0;"><img src="${imgs[0]}" style="${imgBase}"></div><div style="display:flex;flex-direction:column;gap:7px">${smalls}</div></div>`;
-      } else {
-        grid=`<div style="display:grid;grid-template-columns:3fr 2fr;gap:5px">${cell(imgs[0])}<div style="display:flex;flex-direction:column;gap:5px">${imgs.slice(1).map(s=>cell(s)).join('')}</div></div>`;
-      }
-    }
-
-    // ── LEQUE (scattered-fan) ── inline-block approach for PNG safety ──
-    else if(arrange==='scattered-fan'){
-      const angles=[-12,-5,4,13];
-      // Use inline-block with margin-based offsets — html2canvas safe
-      const scW=shape==='portrait'?100:shape==='wide'?140:114;
-      const scH=shape==='portrait'?Math.round(scW*1.25):shape==='wide'?Math.round(scW*0.5625):scW;
-      const wrapH=scH+50;
-      const pieces=imgs.map((s,i)=>{
-        const rot=angles[i%angles.length];
-        const ml=i===0?0:(i===1?-20:(i===2?-30:-28));
-        return `<div style="display:inline-block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 4px 16px rgba(0,0,0,.4);margin-left:${ml}px;vertical-align:middle;flex-shrink:0;">` +
-          `<img src="${s}" style="${imgBase}"></div>`;
-      }).join('');
-      grid=`<div style="display:flex;align-items:center;justify-content:center;height:${wrapH}px;overflow:visible">${pieces}</div>`;
-    }
-
-    // ── PILHA (scattered-pile) ── rotações alternadas ──────────────
-    else if(arrange==='scattered-pile'){
-      const angles=[6,-8,4,-6,9];
-      const scW=shape==='portrait'?110:shape==='wide'?150:120;
-      const scH=shape==='portrait'?Math.round(scW*1.25):shape==='wide'?Math.round(scW*0.5625):scW;
-      const wrapH=scH+40;
-      // Use inline stacking with negative margin, each next on top
-      const pieces=imgs.map((s,i)=>{
-        const rot=angles[i%angles.length];
-        const zIndex=i+1;
-        const mt=i===0?0:-Math.round(scH*0.88);
-        const ml=i===0?0:(i%2===1?12:-12);
-        return `<div style="display:block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 4px 18px rgba(0,0,0,.45);margin-left:auto;margin-right:auto;position:relative;z-index:${zIndex};margin-top:${mt}px;margin-left:calc(50% - ${Math.round(scW/2)}px + ${ml}px);">` +
-          `<img src="${s}" style="${imgBase}"></div>`;
-      }).join('');
-      grid=`<div style="display:block;overflow:visible;padding-bottom:8px">${pieces}</div>`;
-    }
-
-    // ── ESPALHADO (scattered-spread) ── grade levemente rotacionada ─
-    else if(arrange==='scattered-spread'){
-      const angleSet=[[-4,3],[-6,-3],[5,-4],[3,6]];
-      const scW=shape==='portrait'?100:shape==='wide'?130:110;
-      const scH=shape==='portrait'?Math.round(scW*1.25):shape==='wide'?Math.round(scW*0.5625):scW;
-      const cols=n<=2?n:2;
-      const rows=Math.ceil(n/cols);
-      const gapH=10; const gapV=12;
-      const totalW=cols*scW+(cols-1)*gapH;
-      const totalH=rows*scH+(rows-1)*gapV+30;
-      const pieces=imgs.map((s,i)=>{
-        const col=i%cols; const row=Math.floor(i/cols);
-        const [rx,ry]=angleSet[i%angleSet.length];
-        const rot=(rx+ry)/2;
-        const ox=Math.round(rx*1.5); const oy=Math.round(ry*1.5);
-        const left=col*(scW+gapH)+ox;
-        const top=row*(scH+gapV)+oy+15;
-        return `<div style="position:absolute;left:${left}px;top:${top}px;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 4px 16px rgba(0,0,0,.4);z-index:${i+1};">` +
-          `<img src="${s}" style="${imgBase}"></div>`;
-      }).join('');
-      grid=`<div style="position:relative;width:${totalW+30}px;height:${totalH}px;margin:0 auto">${pieces}</div>`;
-    }
-
-    // ── TIRA ───────────────────────────────────────────────────────
-    else if(arrange==='strip'){
-      const stripH=shape==='portrait'?130:shape==='wide'?88:108;
-      const cells=imgs.map(s=>
-        `<div style="flex:1;min-width:0;height:${stripH}px;overflow:hidden;border-radius:${br};"><img src="${s}" style="${imgBase}"></div>`
-      ).join('');
-      grid=`<div style="display:flex;gap:4px">${cells}</div>`;
-    }
-
-    const cap=caption?`<div style="font-size:10px;color:${p.tMuted};text-align:center;margin-top:5px;line-height:1.4">${xh(caption)}</div>`:'';
-    return `<div style="width:100%">${grid}${cap}</div>`;
-  }
 
   return '';
 }

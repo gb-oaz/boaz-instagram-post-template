@@ -312,6 +312,83 @@ body.layout-h .slide{transform-origin:top center;}
 .img-layout-btn:hover{background:rgba(255,255,255,.07);color:var(--text);}
 .img-layout-btn.active{border-color:var(--accent);color:var(--text);background:rgba(255,255,255,.06);}
 .img-shape-row{display:flex;gap:6px;margin-top:6px;}
+/* ── FREE-TRANSFORM IMAGE LAYER ── */
+.img-layer{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
+.img-free{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-free img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;}
+/* ── FREE-TRANSFORM EDITOR ── */
+.img-transform-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.img-transform-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.img-transform-header{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);}
+.img-transform-header span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;flex:1;}
+.img-canvas-wrap{padding:10px;display:flex;gap:10px;align-items:flex-start;}
+.img-mini-canvas{position:relative;width:120px;height:90px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.06);border:2px solid var(--border);flex-shrink:0;cursor:move;user-select:none;}
+.img-mini-canvas:hover{border-color:var(--accent);}
+.img-mini-canvas .mc-img{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-mini-canvas .mc-img img{display:block;width:100%;height:100%;object-fit:contain;}
+.img-mini-canvas .mc-handle-resize{position:absolute;bottom:3px;right:3px;width:12px;height:12px;border-radius:3px;background:var(--accent);cursor:se-resize;z-index:10;opacity:.85;}
+.img-mini-canvas .mc-handle-rotate{position:absolute;top:3px;right:3px;width:12px;height:12px;border-radius:50%;background:var(--accent2);cursor:grab;z-index:10;opacity:.85;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;}
+.img-transform-controls{flex:1;display:flex;flex-direction:column;gap:7px;}
+.img-transform-controls label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:2px;}
+.img-ctrl-row{display:flex;gap:5px;align-items:center;}
+.img-ctrl-row input[type=range]{flex:1;accent-color:var(--accent);height:4px;cursor:pointer;}
+.img-ctrl-row input[type=number]{width:52px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 6px;outline:none;text-align:center;}
+.img-ctrl-row input[type=number]:focus{border-color:var(--accent);}
+.img-ctrl-val{font-size:10px;color:var(--muted);min-width:34px;text-align:right;}
+.img-btn-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.img-mini-btn{font-size:10px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;line-height:1.3;}
+.img-mini-btn:hover{color:var(--text);background:rgba(255,255,255,.1);}
+.img-transform-rm{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:6px;font-size:10px;padding:3px 7px;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1;}
+.img-transform-rm:hover{background:rgba(239,68,68,.3);}
+/* ── FREE-TRANSFORM IMAGE LAYER ── */
+.img-layer{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
+.img-free{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-free img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;}
+/* ── FREE-TRANSFORM EDITOR ── */
+.img-transform-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.img-transform-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.img-transform-header{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);}
+.img-transform-header span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;flex:1;}
+.img-canvas-wrap{padding:10px;display:flex;gap:10px;align-items:flex-start;}
+.img-mini-canvas{position:relative;width:120px;height:90px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.06);border:2px solid var(--border);flex-shrink:0;cursor:move;user-select:none;}
+.img-mini-canvas:hover{border-color:var(--accent);}
+.img-mini-canvas .mc-img{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-mini-canvas .mc-img img{display:block;width:100%;height:100%;object-fit:contain;}
+.img-mini-canvas .mc-handle-resize{position:absolute;bottom:3px;right:3px;width:12px;height:12px;border-radius:3px;background:var(--accent);cursor:se-resize;z-index:10;opacity:.85;}
+.img-mini-canvas .mc-handle-rotate{position:absolute;top:3px;right:3px;width:12px;height:12px;border-radius:50%;background:var(--accent2);cursor:grab;z-index:10;opacity:.85;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;}
+.img-transform-controls{flex:1;display:flex;flex-direction:column;gap:7px;}
+.img-transform-controls label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:2px;}
+.img-ctrl-row{display:flex;gap:5px;align-items:center;}
+.img-ctrl-row input[type=range]{flex:1;accent-color:var(--accent);height:4px;cursor:pointer;}
+.img-ctrl-row input[type=number]{width:52px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 6px;outline:none;text-align:center;}
+.img-ctrl-row input[type=number]:focus{border-color:var(--accent);}
+.img-ctrl-val{font-size:10px;color:var(--muted);min-width:34px;text-align:right;}
+.img-btn-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.img-mini-btn{font-size:10px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;line-height:1.3;}
+.img-mini-btn:hover{color:var(--text);background:rgba(255,255,255,.1);}
+.img-transform-rm{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:6px;font-size:10px;padding:3px 7px;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1;}
+.img-transform-rm:hover{background:rgba(239,68,68,.3);}
+/* ── IMAGE TRANSFORM EDITOR ── */
+.img-transform-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.img-transform-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.img-transform-header{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);}
+.img-transform-header span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;flex:1;}
+.img-transform-body{display:flex;gap:10px;padding:10px;align-items:flex-start;}
+.img-drag-canvas{position:relative;width:90px;height:90px;border-radius:8px;overflow:hidden;cursor:move;flex-shrink:0;border:2px solid var(--border);background:#111;user-select:none;}
+.img-drag-canvas:hover{border-color:var(--accent);}
+.img-drag-canvas img{position:absolute;transform-origin:center center;pointer-events:none;}
+.img-drag-canvas .drag-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.5;pointer-events:none;z-index:2;}
+.img-drag-canvas .drag-crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;pointer-events:none;z-index:3;opacity:.7;}
+.img-drag-canvas .drag-crosshair::before,.img-drag-canvas .drag-crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.8);}
+.img-drag-canvas .drag-crosshair::before{width:1px;height:100%;left:50%;top:0;}
+.img-drag-canvas .drag-crosshair::after{height:1px;width:100%;top:50%;left:0;}
+.img-transform-controls{flex:1;display:flex;flex-direction:column;gap:8px;}
+.img-transform-controls label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:0;}
+.img-zoom-slider{width:100%;accent-color:var(--accent);cursor:pointer;height:4px;}
+.img-reset-btn{font-size:10px;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;width:100%;text-align:center;}
+.img-reset-btn:hover{color:var(--text);background:rgba(255,255,255,.1);}
+.img-transform-rm{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:6px;font-size:10px;padding:3px 7px;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1;}
+.img-transform-rm:hover{background:rgba(239,68,68,.3);}
 
 /* IMAGE BLOCK — slide render */
 .img-slide-1{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;}
@@ -1301,62 +1378,67 @@ function renderBlocks(si) {
     } else if (b.type === 'divider') {
       inner = `<div style="padding:7px 11px"><label>Texto do divisor (opcional)</label><input type="text" value="${esc(b.divLabel||'')}" placeholder="ou deixe vazio" oninput="slides[${si}].blocks[${bi}].divLabel=this.value"></div>`;
     } else if (b.type === 'image') {
-      const layout  = b.layout  || '1';
-      const shape   = b.shape   || 'square';
-      const arrange = b.arrange || 'grid';
-      const maxImgs = parseInt(layout);
       const imgs = b.images || [];
-      const layouts = [
-        { v:'1', label:'1',  icon:'▪' },
-        { v:'2', label:'2',  icon:'▪▪' },
-        { v:'3', label:'3',  icon:'▪▪▪' },
-        { v:'4', label:'4',  icon:'▪▪▪▪' },
-      ];
-      const shapes = [
-        { v:'square',   label:'Quadrado' },
-        { v:'portrait', label:'Retrato' },
-        { v:'wide',     label:'Paisagem' },
-        { v:'circle',   label:'Círculo' },
-      ];
-      const arrangements = [
-        { v:'grid',          label:'Grade',        desc:'lado a lado' },
-        { v:'stack',         label:'Empilhado',    desc:'um abaixo do outro' },
-        { v:'mosaic',        label:'Mosaico',      desc:'1 grande + pequenas' },
-        { v:'scattered-fan', label:'Leque',        desc:'sobrepostos em leque' },
-        { v:'scattered-pile',label:'Pilha',        desc:'empilhados tortos' },
-        { v:'scattered-spread',label:'Espalhado',  desc:'dispersos em área' },
-        { v:'strip',         label:'Tira',         desc:'horizontal estreita' },
-      ];
-      const thumbsHtml = imgs.map((img, ii) => `
-        <div class="img-thumb">
-          <img src="${img}" alt="">
-          <button class="rm-img" onclick="removeImg(${si},${bi},${ii})">✕</button>
-        </div>`).join('');
-      const uploadDisabled = imgs.length >= maxImgs ? 'style="opacity:.4;pointer-events:none"' : '';
+      // Build per-image free-transform editor cards
+      const transformCards = imgs.map((img, ii) => {
+        const imgSrc = typeof img === 'string' ? img : img.src;
+        const ix  = typeof img === 'object' ? (img.x  || 50) : 50;  // % from left
+        const iy  = typeof img === 'object' ? (img.y  || 50) : 50;  // % from top
+        const iw  = typeof img === 'object' ? (img.w  || 50) : 50;  // % width
+        const rot = typeof img === 'object' ? (img.rot|| 0)  : 0;   // degrees
+        return `<div class="img-transform-card" id="itc-${si}-${bi}-${ii}">
+          <div class="img-transform-header">
+            <span>Imagem ${ii+1}</span>
+            <div style="display:flex;gap:4px;align-items:center">
+              ${ii>0?`<button class="img-mini-btn" onclick="moveImgLayer(${si},${bi},${ii},-1)" title="Para frente">↑ Camada</button>`:''}
+              ${ii<imgs.length-1?`<button class="img-mini-btn" onclick="moveImgLayer(${si},${bi},${ii},1)" title="Para trás">↓ Camada</button>`:''}
+              <button class="img-transform-rm" onclick="removeImg(${si},${bi},${ii})">✕</button>
+            </div>
+          </div>
+          <div class="img-canvas-wrap">
+            <div class="img-mini-canvas" id="imc-${si}-${bi}-${ii}"
+              onmousedown="startMCDrag(event,${si},${bi},${ii},'move')"
+              ontouchstart="startMCDragTouch(event,${si},${bi},${ii},'move')">
+              <div class="mc-img" id="mcimg-${si}-${bi}-${ii}"
+                style="width:${iw}%;aspect-ratio:auto;left:${ix}%;top:${iy}%;transform:translate(-50%,-50%) rotate(${rot}deg);">
+                <img src="${imgSrc}" style="display:block;width:100%;height:auto;">
+              </div>
+              <div class="mc-handle-resize" onmousedown="startMCDrag(event,${si},${bi},${ii},'resize')" ontouchstart="startMCDragTouch(event,${si},${bi},${ii},'resize')"></div>
+              <div class="mc-handle-rotate" onmousedown="startMCDrag(event,${si},${bi},${ii},'rotate')" ontouchstart="startMCDragTouch(event,${si},${bi},${ii},'rotate')">↻</div>
+            </div>
+            <div class="img-transform-controls">
+              <div>
+                <label>Tamanho</label>
+                <div class="img-ctrl-row">
+                  <input type="range" min="5" max="100" value="${Math.round(iw)}" oninput="setImgProp(${si},${bi},${ii},'w',+this.value)">
+                  <span class="img-ctrl-val">${Math.round(iw)}%</span>
+                </div>
+              </div>
+              <div>
+                <label>Rotação</label>
+                <div class="img-ctrl-row">
+                  <input type="range" min="-180" max="180" value="${Math.round(rot)}" oninput="setImgProp(${si},${bi},${ii},'rot',+this.value)">
+                  <span class="img-ctrl-val">${Math.round(rot)}°</span>
+                </div>
+              </div>
+              <div class="img-btn-row">
+                <button class="img-mini-btn" onclick="setImgProp(${si},${bi},${ii},'rot',0)">↺ 0°</button>
+                <button class="img-mini-btn" onclick="setImgProp(${si},${bi},${ii},'x',50);setImgProp(${si},${bi},${ii},'y',50)">⊙ Centro</button>
+                <button class="img-mini-btn" onclick="resetImgTransform(${si},${bi},${ii})">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
       inner = `<div style="padding:8px 11px;display:flex;flex-direction:column;gap:9px">
-        <div class="row2">
-          <div>
-            <label>Quantidade de imagens</label>
-            <div class="img-layout-row">${layouts.map(l => `<button class="img-layout-btn${layout===l.v?' active':''}" onclick="setImgLayout(${si},${bi},'${l.v}')">${l.icon} ${l.label}</button>`).join('')}</div>
-          </div>
-          <div>
-            <label>Formato</label>
-            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">${shapes.map(s => `<button class="img-layout-btn${shape===s.v?' active':''}" onclick="setImgShape(${si},${bi},'${s.v}')">${s.label}</button>`).join('')}</div>
-          </div>
-        </div>
         <div>
-          <label>Arranjo das imagens</label>
-          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">${arrangements.map(a => `<button class="img-layout-btn${arrange===a.v?' active':''}" onclick="setImgArrange(${si},${bi},'${a.v}')" title="${a.desc}">${a.label}</button>`).join('')}</div>
-        </div>
-        <div>
-          <label>Imagens (${imgs.length}/${maxImgs})</label>
-          <div class="img-upload-zone" ${uploadDisabled}>
+          <label>Adicionar imagens</label>
+          <div class="img-upload-zone">
             <input type="file" accept="image/*" multiple onchange="handleImgUpload(event,${si},${bi})">
-            <div class="uz-label"><strong>📁 Clique para adicionar imagens</strong>${maxImgs - imgs.length > 0 ? `${maxImgs - imgs.length} restante(s)` : 'Limite atingido'}</div>
+            <div class="uz-label"><strong>📁 Clique para adicionar imagens</strong>Cada imagem é posicionada livremente no slide</div>
           </div>
-          ${thumbsHtml ? `<div class="img-preview-strip">${thumbsHtml}</div>` : ''}
+          ${transformCards ? `<div class="img-transform-list">${transformCards}</div>` : ''}
         </div>
-        <div><label>Legenda (opcional)</label><input type="text" value="${esc(b.caption||'')}" placeholder="Legenda abaixo das imagens..." oninput="slides[${si}].blocks[${bi}].caption=this.value"></div>
       </div>`;
     } else if (b.type === 'code') {
       const langOpts = LANGS.map(l => `<option value="${l.id}" ${(b.lang||'python')===l.id?'selected':''}>${l.icon} ${l.name}</option>`).join('');
@@ -1386,20 +1468,37 @@ function addStat(si, bi) {
   if (slides[si].blocks[bi].stats.length < 4) { slides[si].blocks[bi].stats.push({val:'',label:''}); renderBlocks(si); }
 }
 
+// ── FREE-TRANSFORM IMAGE SYSTEM ──────────────────────────────────────────
+// Image object: { src, x, y, w, rot }
+//   x, y: position in % of slide (0–100), anchored to image center
+//   w: width in % of slide (5–100)
+//   rot: rotation in degrees
+
+function getImgObj(si, bi, ii) {
+  const img = slides[si].blocks[bi].images[ii];
+  if (typeof img === 'string') {
+    slides[si].blocks[bi].images[ii] = { src: img, x: 50, y: 50, w: 50, rot: 0 };
+  } else {
+    // Migrate old format (had x/y in px, scale)
+    if (img.scale !== undefined || (img.x !== undefined && img.x <= 1)) {
+      slides[si].blocks[bi].images[ii] = { src: img.src || img, x: 50, y: 50, w: 50, rot: 0 };
+    }
+  }
+  return slides[si].blocks[bi].images[ii];
+}
+
 function handleImgUpload(event, si, bi) {
   const files = Array.from(event.target.files);
   const b = slides[si].blocks[bi];
   if (!b.images) b.images = [];
-  const maxImgs = parseInt(b.layout || '1');
-  const remaining = maxImgs - b.images.length;
-  const toLoad = files.slice(0, remaining);
   let loaded = 0;
-  toLoad.forEach(file => {
+  files.forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
-      b.images.push(e.target.result);
+      // Default: centered, 50% wide
+      b.images.push({ src: e.target.result, x: 50, y: 50, w: 50, rot: 0 });
       loaded++;
-      if (loaded === toLoad.length) { renderBlocks(si); renderSlides(); }
+      if (loaded === files.length) { renderBlocks(si); renderSlides(); }
     };
     reader.readAsDataURL(file);
   });
@@ -1411,28 +1510,138 @@ function removeImg(si, bi, ii) {
   renderSlides();
 }
 
-function setImgLayout(si, bi, val) {
-  const b = slides[si].blocks[bi];
-  b.layout = val;
-  const max = parseInt(val);
-  if (b.images && b.images.length > max) b.images = b.images.slice(0, max);
+function moveImgLayer(si, bi, ii, dir) {
+  const imgs = slides[si].blocks[bi].images;
+  const ni = ii + dir;
+  if (ni < 0 || ni >= imgs.length) return;
+  [imgs[ii], imgs[ni]] = [imgs[ni], imgs[ii]];
   renderBlocks(si);
   renderSlides();
 }
 
-function setImgShape(si, bi, val) {
-  slides[si].blocks[bi].shape = val;
+function setImgProp(si, bi, ii, prop, val) {
+  const img = getImgObj(si, bi, ii);
+  img[prop] = val;
+  updateMiniCanvas(si, bi, ii);
+  renderSlides();
+  // Update slider value labels
+  const card = document.getElementById(`itc-${si}-${bi}-${ii}`);
+  if (card) {
+    card.querySelectorAll('input[type=range]').forEach(inp => {
+      const v = parseFloat(inp.value);
+      const span = inp.closest('.img-ctrl-row')?.querySelector('.img-ctrl-val');
+      if (span) span.textContent = inp.max == 180 ? `${Math.round(v)}°` : `${Math.round(v)}%`;
+    });
+  }
+}
+
+function resetImgTransform(si, bi, ii) {
+  const img = getImgObj(si, bi, ii);
+  img.x = 50; img.y = 50; img.w = 50; img.rot = 0;
   renderBlocks(si);
   renderSlides();
 }
 
-function setImgArrange(si, bi, val) {
-  slides[si].blocks[bi].arrange = val;
-  renderBlocks(si);
-  renderSlides();
+// Update the mini canvas preview without full re-render
+function updateMiniCanvas(si, bi, ii) {
+  const img = getImgObj(si, bi, ii);
+  const mc = document.getElementById(`mcimg-${si}-${bi}-${ii}`);
+  if (mc) {
+    mc.style.left = `${img.x}%`;
+    mc.style.top  = `${img.y}%`;
+    mc.style.width = `${img.w}%`;
+    mc.style.transform = `translate(-50%,-50%) rotate(${img.rot}deg)`;
+  }
 }
+
+// ── MINI CANVAS DRAG (move / resize / rotate) ────────────────────────────
+let _mc = null; // { si, bi, ii, mode, startX, startY, ox, oy, ow, orot, canvasRect }
+
+function getMCRect(si, bi, ii) {
+  const el = document.getElementById(`imc-${si}-${bi}-${ii}`);
+  return el ? el.getBoundingClientRect() : null;
+}
+
+function startMCDrag(e, si, bi, ii, mode) {
+  e.preventDefault();
+  e.stopPropagation();
+  const img = getImgObj(si, bi, ii);
+  const rect = getMCRect(si, bi, ii);
+  _mc = { si, bi, ii, mode,
+    startX: e.clientX, startY: e.clientY,
+    ox: img.x, oy: img.y, ow: img.w, orot: img.rot,
+    rect };
+  document.addEventListener('mousemove', onMCDrag);
+  document.addEventListener('mouseup', stopMCDrag);
+}
+
+function startMCDragTouch(e, si, bi, ii, mode) {
+  e.preventDefault();
+  e.stopPropagation();
+  const t = e.touches[0];
+  const img = getImgObj(si, bi, ii);
+  const rect = getMCRect(si, bi, ii);
+  _mc = { si, bi, ii, mode,
+    startX: t.clientX, startY: t.clientY,
+    ox: img.x, oy: img.y, ow: img.w, orot: img.rot,
+    rect };
+  document.addEventListener('touchmove', onMCDragTouch, { passive: false });
+  document.addEventListener('touchend', stopMCDrag);
+}
+
+function onMCDrag(e) {
+  if (!_mc) return;
+  applyMCDrag(e.clientX, e.clientY);
+}
+function onMCDragTouch(e) {
+  e.preventDefault();
+  if (!_mc) return;
+  applyMCDrag(e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function applyMCDrag(cx, cy) {
+  const { si, bi, ii, mode, startX, startY, ox, oy, ow, orot, rect } = _mc;
+  const img = getImgObj(si, bi, ii);
+  const W = rect.width, H = rect.height;
+  const dx = cx - startX, dy = cy - startY;
+
+  if (mode === 'move') {
+    img.x = Math.max(0, Math.min(100, ox + (dx / W) * 100));
+    img.y = Math.max(0, Math.min(100, oy + (dy / H) * 100));
+  } else if (mode === 'resize') {
+    const delta = (dx - dy) / Math.max(W, H) * 100;
+    img.w = Math.max(5, Math.min(100, ow + delta));
+  } else if (mode === 'rotate') {
+    // Angle from canvas center to cursor
+    const cx0 = rect.left + W / 2, cy0 = rect.top + H / 2;
+    const a0 = Math.atan2(startY - cy0, startX - cx0);
+    const a1 = Math.atan2(cy - cy0, cx - cx0);
+    img.rot = Math.round(orot + (a1 - a0) * 180 / Math.PI);
+  }
+
+  updateMiniCanvas(si, bi, ii);
+  renderSlides();
+  // sync sliders
+  const card = document.getElementById(`itc-${si}-${bi}-${ii}`);
+  if (card) {
+    const sliders = card.querySelectorAll('input[type=range]');
+    sliders.forEach(s => {
+      if (s.max == 100 && s.min == 5) { s.value = img.w; const sp = s.closest('.img-ctrl-row')?.querySelector('.img-ctrl-val'); if(sp) sp.textContent = `${Math.round(img.w)}%`; }
+      if (s.max == 180) { s.value = img.rot; const sp = s.closest('.img-ctrl-row')?.querySelector('.img-ctrl-val'); if(sp) sp.textContent = `${Math.round(img.rot)}°`; }
+    });
+  }
+}
+
+function stopMCDrag() {
+  _mc = null;
+  document.removeEventListener('mousemove', onMCDrag);
+  document.removeEventListener('mouseup', stopMCDrag);
+  document.removeEventListener('touchmove', onMCDragTouch);
+  document.removeEventListener('touchend', stopMCDrag);
+}
+
 function addBlock(si, type) {
-  const defaults = { text:{content:''}, list:{content:[]}, steps:{content:[]}, highlight:{content:''}, quote:{quoteText:'',quoteAuthor:''}, tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''}, stat:{stats:[{val:'',label:''},{val:'',label:''}]}, compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]}, image:{images:[],layout:'1',shape:'square',arrange:'grid',caption:''}, code:{lang:'python',content:''}, divider:{divLabel:''} };
+  const defaults = { text:{content:''}, list:{content:[]}, steps:{content:[]}, highlight:{content:''}, quote:{quoteText:'',quoteAuthor:''}, tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''}, stat:{stats:[{val:'',label:''},{val:'',label:''}]}, compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]}, image:{images:[]}, code:{lang:'python',content:''}, divider:{divLabel:''} };
   slides[si].blocks.push({ type, ...defaults[type] });
   renderBlocks(si);
 }
@@ -1895,11 +2104,21 @@ function makeIntroSlide(topic, category, subtitle, cur, total, p) {
 }
 
 function makeContentSlide(s, category, cur, total, p) {
-  const bodyHtml = s.blocks.map(b => renderBlockHTML(b, p)).join('');
   const tf = activeTypo.titleFont;
   const bf = activeTypo.bodyFont;
-  // If ALL blocks are images (no title/eyebrow needed), go full-body centered
-  const onlyImages = s.blocks.length > 0 && s.blocks.every(b => b.type === 'image');
+  // Separate image blocks (rendered as free-floating layer) from text blocks
+  const textBlocks = s.blocks.filter(b => b.type !== 'image');
+  const imgBlocks  = s.blocks.filter(b => b.type === 'image');
+  const bodyHtml = textBlocks.map(b => renderBlockHTML(b, p)).join('');
+  const hasText = textBlocks.length > 0;
+  // Build the free-image layer HTML
+  const imgLayerHtml = imgBlocks.flatMap(b =>
+    (b.images || []).map(img => {
+      const io = typeof img === 'string' ? { src:img, x:50, y:50, w:50, rot:0 } : img;
+      return `<div class="img-free" style="left:${io.x}%;top:${io.y}%;width:${io.w}%;transform:translate(-50%,-50%) rotate(${io.rot||0}deg);">` +
+        `<img src="${io.src}" style="display:block;width:100%;height:auto;"></div>`;
+    })
+  ).join('');
   const ww = wd();
   ww.innerHTML = `
   <div class="slide content" style="${cssv(p)}">
@@ -1907,11 +2126,12 @@ function makeContentSlide(s, category, cur, total, p) {
     <div class="slide-grid"></div>
     <div class="slide-glow" style="background:radial-gradient(circle,${p.glow} 0%,transparent 70%)"></div>
     ${makeHdr(category, p)}
-    <div class="slide-body" style="justify-content:${onlyImages?'center':'flex-start'};align-items:${onlyImages?'center':'flex-start'}">
-      ${onlyImages ? '' : `<div class="c-eyebrow" style="color:${p.c2}">${xh(s.eyebrow)}</div>
-      <div class="c-title" style="color:${p.tMain};font-family:${tf}">${applyHL(s.title, s.hl, p.c1)}</div>`}
-      <div class="c-body" style="color:${p.tSub};font-family:${bf};${onlyImages?'flex:unset;width:100%':''}">${bodyHtml}</div>
+    <div class="slide-body">
+      ${hasText ? `<div class="c-eyebrow" style="color:${p.c2}">${xh(s.eyebrow)}</div>
+      <div class="c-title" style="color:${p.tMain};font-family:${tf}">${applyHL(s.title, s.hl, p.c1)}</div>
+      <div class="c-body" style="color:${p.tSub};font-family:${bf}">${bodyHtml}</div>` : ''}
     </div>
+    ${imgLayerHtml ? `<div class="img-layer">${imgLayerHtml}</div>` : ''}
     ${makeFtr('@gustavoboazms', cur, total, p)}
   </div>
   <div class="snum">Slide ${cur} — Conteúdo</div>`;
@@ -2225,173 +2445,8 @@ function renderBlockHTML(b, p) {
     </div>`;
   }
 
-  if (b.type === 'image') {
-    const imgs    = (b.images || []).filter(s => s);
-    const shape   = b.shape   || 'square';
-    const arrange = b.arrange || 'grid';
-    const caption = b.caption || '';
-    const n       = imgs.length;
-
-    if (!n) {
-      return `<div style="border:2px dashed ${p.bdr};border-radius:10px;height:100px;display:flex;align-items:center;justify-content:center;color:${p.tMuted};font-size:12px">🖼️ Nenhuma imagem adicionada</div>`;
-    }
-
-    // border-radius per shape — circle uses 50%
-    const brMap = { square:'9px', portrait:'12px', wide:'7px', circle:'50%' };
-    const br    = brMap[shape] || '9px';
-
-    // aspect-ratio per shape — this is the KEY to correct proportions
-    const arMap = { square:'1/1', portrait:'4/5', wide:'16/9', circle:'1/1' };
-    const ar    = arMap[shape] || '1/1';
-
-    // Base image CSS — fills its container while cropping to maintain ratio
-    const imgBase = `width:100%;height:100%;object-fit:cover;border-radius:${br};display:block;`;
-
-    // A single image cell: a container that enforces aspect-ratio, with the img inside
-    // For circle, we also enforce overflow:hidden on the container so the 50% radius clips correctly
-    const cell = (src, extraContainer='', extraImg='') =>
-      `<div style="aspect-ratio:${ar};overflow:hidden;border-radius:${br};${extraContainer}">` +
-      `<img src="${src}" style="${imgBase}${extraImg}"></div>`;
-
-    // Max usable width inside slide body = 546px (600 - 27*2 padding)
-    // For circles with multiple images we use a fixed size so they stay perfectly round
-    const circleSize = n === 1 ? 240 : n === 2 ? 180 : n <= 4 ? 140 : 120;
-
-    let grid = '';
-
-    // ── GRID: side by side equal cells ──────────────────────────
-    if (arrange === 'grid') {
-      if (shape === 'circle') {
-        // Circles need explicit equal width/height — use flex + fixed size
-        const cs = circleSize;
-        const cCells = imgs.map(s =>
-          `<div style="width:${cs}px;height:${cs}px;border-radius:50%;overflow:hidden;flex-shrink:0;">` +
-          `<img src="${s}" style="${imgBase}"></div>`
-        ).join('');
-        grid = `<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center">${cCells}</div>`;
-      } else if (n === 1) {
-        grid = `<div style="width:100%">${cell(imgs[0])}</div>`;
-      } else if (n === 2) {
-        grid = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${imgs.map(s=>cell(s)).join('')}</div>`;
-      } else if (n === 3) {
-        grid = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">${imgs.map(s=>cell(s)).join('')}</div>`;
-      } else {
-        grid = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${imgs.map(s=>cell(s)).join('')}</div>`;
-      }
-    }
-
-    // ── STACK: one below the other ───────────────────────────────
-    else if (arrange === 'stack') {
-      if (shape === 'circle') {
-        const cs = circleSize;
-        const cCells = imgs.map(s =>
-          `<div style="width:${cs}px;height:${cs}px;border-radius:50%;overflow:hidden;margin:0 auto;">` +
-          `<img src="${s}" style="${imgBase}"></div>`
-        ).join('');
-        grid = `<div style="display:flex;flex-direction:column;gap:8px;align-items:center">${cCells}</div>`;
-      } else {
-        // For stack, limit width so tall images don't overflow
-        const stackW = n === 1 ? '100%' : shape === 'portrait' ? '65%' : '100%';
-        const cells = imgs.map(s =>
-          `<div style="width:${stackW};margin:0 auto">${cell(s)}</div>`
-        ).join('');
-        grid = `<div style="display:flex;flex-direction:column;gap:6px">${cells}</div>`;
-      }
-    }
-
-    // ── MOSAIC: 1 large left + column of smaller on right ────────
-    else if (arrange === 'mosaic') {
-      if (n === 1) {
-        grid = `<div style="width:100%">${cell(imgs[0])}</div>`;
-      } else if (shape === 'circle') {
-        // Mosaic + circle: large center + smaller around
-        const big = circleSize + 40;
-        const sm  = circleSize - 30;
-        const smalls = imgs.slice(1).map(s =>
-          `<div style="width:${sm}px;height:${sm}px;border-radius:50%;overflow:hidden;">` +
-          `<img src="${s}" style="${imgBase}"></div>`
-        ).join('');
-        grid = `<div style="display:flex;gap:8px;align-items:center;justify-content:center">` +
-          `<div style="width:${big}px;height:${big}px;border-radius:50%;overflow:hidden;flex-shrink:0;"><img src="${imgs[0]}" style="${imgBase}"></div>` +
-          `<div style="display:flex;flex-direction:column;gap:8px">${smalls}</div></div>`;
-      } else {
-        grid = `<div style="display:grid;grid-template-columns:3fr 2fr;gap:6px">` +
-          `${cell(imgs[0])}` +
-          `<div style="display:flex;flex-direction:column;gap:6px">${imgs.slice(1).map(s=>cell(s)).join('')}</div>` +
-          `</div>`;
-      }
-    }
-
-    // ── SCATTERED-FAN: leque com rotações, flex inline ─────────────
-    else if (arrange === 'scattered-fan') {
-      const angles = [-12, -5, 4, 13];
-      const scW = shape === 'portrait' ? 140 : shape === 'wide' ? 200 : 160;
-      const scH = shape === 'portrait' ? Math.round(scW*1.25) : shape === 'wide' ? Math.round(scW*0.5625) : scW;
-      const wrapH = scH + 60;
-      const pieces = imgs.map((s, i) => {
-        const rot = angles[i % angles.length];
-        const ml = i === 0 ? 0 : (i === 1 ? -22 : (i === 2 ? -32 : -30));
-        return `<div style="display:inline-block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 5px 18px rgba(0,0,0,.4);margin-left:${ml}px;vertical-align:middle;flex-shrink:0;">` +
-          `<img src="${s}" style="${imgBase}"></div>`;
-      }).join('');
-      grid = `<div style="display:flex;align-items:center;justify-content:center;height:${wrapH}px;overflow:visible">${pieces}</div>`;
-    }
-
-    // ── SCATTERED-PILE: empilhados tortos com margem negativa ───────
-    else if (arrange === 'scattered-pile') {
-      const angles = [6, -8, 4, -6, 9];
-      const scW = shape === 'portrait' ? 150 : shape === 'wide' ? 210 : 170;
-      const scH = shape === 'portrait' ? Math.round(scW*1.25) : shape === 'wide' ? Math.round(scW*0.5625) : scW;
-      const pieces = imgs.map((s, i) => {
-        const rot = angles[i % angles.length];
-        const zIndex = i + 1;
-        const mt = i === 0 ? 0 : -Math.round(scH * 0.88);
-        const ml = i === 0 ? 0 : (i % 2 === 1 ? 14 : -14);
-        return `<div style="display:block;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 5px 18px rgba(0,0,0,.45);position:relative;z-index:${zIndex};margin-top:${mt}px;margin-left:calc(50% - ${Math.round(scW/2)}px + ${ml}px);">` +
-          `<img src="${s}" style="${imgBase}"></div>`;
-      }).join('');
-      grid = `<div style="display:block;overflow:visible;padding-bottom:8px">${pieces}</div>`;
-    }
-
-    // ── SCATTERED-SPREAD: grade levemente rotacionada ──────────────
-    else if (arrange === 'scattered-spread') {
-      const angleSet = [[-4, 3], [-6, -3], [5, -4], [3, 6]];
-      const scW = shape === 'portrait' ? 130 : shape === 'wide' ? 180 : 150;
-      const scH = shape === 'portrait' ? Math.round(scW*1.25) : shape === 'wide' ? Math.round(scW*0.5625) : scW;
-      const cols = n <= 2 ? n : 2;
-      const rows = Math.ceil(n / cols);
-      const gapH = 12; const gapV = 14;
-      const totalW = cols * scW + (cols - 1) * gapH;
-      const totalH = rows * scH + (rows - 1) * gapV + 36;
-      const pieces = imgs.map((s, i) => {
-        const col = i % cols; const row = Math.floor(i / cols);
-        const [rx, ry] = angleSet[i % angleSet.length];
-        const rot = (rx + ry) / 2;
-        const ox = Math.round(rx * 1.5); const oy = Math.round(ry * 1.5);
-        const left = col * (scW + gapH) + ox;
-        const top  = row * (scH + gapV) + oy + 18;
-        return `<div style="position:absolute;left:${left}px;top:${top}px;width:${scW}px;height:${scH}px;border-radius:${br};overflow:hidden;transform:rotate(${rot}deg);box-shadow:0 5px 18px rgba(0,0,0,.4);z-index:${i+1};">` +
-          `<img src="${s}" style="${imgBase}"></div>`;
-      }).join('');
-      grid = `<div style="position:relative;width:${totalW+30}px;height:${totalH}px;margin:0 auto">${pieces}</div>`;
-    }
-
-    // ── STRIP: horizontal thin bar ───────────────────────────────
-    else if (arrange === 'strip') {
-      // Fixed height strip — images side by side, each cell uses aspect-ratio override
-      const stripH = shape === 'portrait' ? 150 : shape === 'wide' ? 100 : 120;
-      const cells = imgs.map(s =>
-        `<div style="flex:1;min-width:0;height:${stripH}px;overflow:hidden;border-radius:${br};">` +
-        `<img src="${s}" style="${imgBase}"></div>`
-      ).join('');
-      grid = `<div style="display:flex;gap:5px">${cells}</div>`;
-    }
-
-    const cap = caption
-      ? `<div style="font-size:10px;color:${p.tMuted};text-align:center;margin-top:5px;line-height:1.4">${xh(caption)}</div>`
-      : '';
-    return `<div style="width:100%">${grid}${cap}</div>`;
-  }
+  // image blocks are rendered as a free-floating layer in makeContentSlide — not inline
+  if (b.type === 'image') return '';
 
   return '';
 }
