@@ -1028,12 +1028,28 @@ function renderBlocks(si){
         <div class="row2"><div><label>Itens esquerda (um/linha)</label><textarea rows="3" style="border:1px solid var(--border);border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].leftItems=this.value.split('\\n')">${escTA(lItems)}</textarea></div><div><label>Itens direita (um/linha)</label><textarea rows="3" style="border:1px solid var(--border);border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].rightItems=this.value.split('\\n')">${escTA(rItems)}</textarea></div></div>
       </div>`;
     } else if(b.type==='timeline'){
-      const items=b.items||[]; const orient=b.orient||'vertical'; const align=b.align||'left';
+      const items=b.items||[]; const orient=b.orient||'vertical';
+      const align=b.align||(orient==='horizontal'?'center':'left');
+      const spacing=b.spacing!==undefined?b.spacing:28;
       inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:6px">
         <div class="row2">
-          <div><label>Orientação</label><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 7px;width:100%" oninput="slides[${si}].blocks[${bi}].orient=this.value"><option value="vertical" ${orient==='vertical'?'selected':''}>Vertical</option><option value="horizontal" ${orient==='horizontal'?'selected':''}>Horizontal</option></select></div>
-          <div><label>Alinhamento</label><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 7px;width:100%" oninput="slides[${si}].blocks[${bi}].align=this.value"><option value="left" ${align==='left'?'selected':''}>Esquerda</option><option value="right" ${align==='right'?'selected':''}>Direita</option></select></div>
+          <div><label>Orientação</label><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 7px;width:100%" oninput="
+            const isH=this.value==='horizontal';
+            slides[${si}].blocks[${bi}].orient=this.value;
+            if(isH){slides[${si}].blocks[${bi}].align='center';slides[${si}].blocks[${bi}].stretch=true;}
+            else{slides[${si}].blocks[${bi}].stretch=false;}
+            renderBlocks(${si})"><option value="vertical" ${orient==='vertical'?'selected':''}>Vertical</option><option value="horizontal" ${orient==='horizontal'?'selected':''}>Horizontal</option></select></div>
+          <div><label>Alinhamento</label>
+            ${orient==='horizontal'
+              ? `<select disabled style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 7px;width:100%;opacity:.5;cursor:not-allowed"><option>Centralizado</option></select>`
+              : `<select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 7px;width:100%" oninput="slides[${si}].blocks[${bi}].align=this.value"><option value="left" ${align==='left'?'selected':''}>Esquerda</option><option value="center" ${align==='center'?'selected':''}>Centralizado</option><option value="right" ${align==='right'?'selected':''}>Direita</option></select>`
+            }
+          </div>
         </div>
+        ${orient==='vertical'?`<div style="display:flex;flex-direction:column;gap:3px">
+          <label>Distância — <strong id="tl-sp-lbl-${si}-${bi}">${spacing}px</strong></label>
+          <input type="range" min="10" max="540" value="${spacing}" style="width:100%" oninput="slides[${si}].blocks[${bi}].spacing=+this.value;document.getElementById('tl-sp-lbl-${si}-${bi}').textContent=this.value+'px'">
+        </div>`:''}
         ${items.map((it,ii)=>`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:7px 9px;display:flex;flex-direction:column;gap:4px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px"><span style="font-size:9.5px;color:var(--muted);font-weight:700">Evento ${ii+1}</span><div style="display:flex;gap:3px">${ii>0?`<button class="btn-reorder" onclick="moveTLItem(${si},${bi},${ii},-1)">↑</button>`:''} ${ii<items.length-1?`<button class="btn-reorder" onclick="moveTLItem(${si},${bi},${ii},1)">↓</button>`:''}<button class="btn btn-danger" style="font-size:9px;padding:1px 6px" onclick="removeTLItem(${si},${bi},${ii})">✕</button></div></div>
           <div class="row2"><div><label>Data / Período</label><input type="text" value="${esc(it.date||'')}" placeholder="2024" oninput="slides[${si}].blocks[${bi}].items[${ii}].date=this.value"></div><div style="display:flex;flex-direction:column;gap:2px"><label>Cor do ponto</label><div style="display:flex;gap:4px;align-items:center"><input type="color" value="${it.color||'#6366f1'}" oninput="slides[${si}].blocks[${bi}].items[${ii}].color=this.value" style="width:30px;height:24px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;padding:1px"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].items[${ii}].color=''" title="Cor da paleta">↺ Paleta</button></div></div></div>
@@ -1124,7 +1140,7 @@ function applyMCDragReel(cx,cy){
 }
 function stopMCDragReel(){_mcR=null;document.removeEventListener('mousemove',onMCDragReel);document.removeEventListener('mouseup',stopMCDragReel);document.removeEventListener('touchmove',onMCDragTouchReel);document.removeEventListener('touchend',stopMCDragReel);}
 
-function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]},image:{images:[]},code:{lang:'python',content:''},divider:{divLabel:''},timeline:{orient:'vertical',align:'left',items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
+function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]},image:{images:[]},code:{lang:'python',content:''},divider:{divLabel:''},timeline:{orient:'vertical',align:'left',stretch:true,spacing:18,items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
 function removeBlock(si,bi){slides[si].blocks.splice(bi,1);renderBlocks(si);}
 function moveBlock(si,bi,d){const a=slides[si].blocks,ni=bi+d;if(ni<0||ni>=a.length)return;[a[bi],a[ni]]=[a[ni],a[bi]];renderBlocks(si);}
 function addTLItem(si,bi){if(!slides[si].blocks[bi].items)slides[si].blocks[bi].items=[];slides[si].blocks[bi].items.push({date:'',title:'',desc:'',color:''});renderBlocks(si);}
@@ -1625,43 +1641,67 @@ function renderBlock(b,p,bf){
   }
   if(b.type==='timeline'){
     const items=(b.items||[]).filter(it=>it.title||it.date);
-    const orient=b.orient||'vertical'; const align=b.align||'left';
+    const orient=b.orient||'vertical';
+    const align=b.align||(orient==='horizontal'?'center':'left');
+    const spacing=b.spacing!==undefined?b.spacing:28;
     if(!items.length) return '';
+
     if(orient==='horizontal'){
+      // Sempre esticado + centralizado
       const cells=items.map((it,i)=>{
         const clr=(it.color&&it.color.trim())?it.color.trim():p.c1;
-        const isLast=i===items.length-1;
-        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;padding:0 2px">
+        const isLast=i===items.length-1; const isFirst=i===0;
+        return `<div style="flex:1;min-width:40px;display:flex;flex-direction:column;align-items:center;text-align:center;">
           <div style="display:flex;width:100%;align-items:center;margin-bottom:5px">
-            <div style="flex:${i===0?0:1};height:2px;background:${i===0?'transparent':ha(clr,.35)}"></div>
-            <div style="width:11px;height:11px;border-radius:50%;background:${clr};border:2px solid ${clr};flex-shrink:0;box-shadow:0 0 5px ${ha(clr,.4)}"></div>
-            <div style="flex:${isLast?0:1};height:2px;background:${isLast?'transparent':ha(clr,.35)}"></div>
+            <div style="flex:1;height:1px;background:${isFirst?'transparent':ha(clr,.4)}"></div>
+            <div style="width:9px;height:9px;border-radius:50%;background:${clr};flex-shrink:0;box-shadow:0 0 5px ${ha(clr,.5)}"></div>
+            <div style="flex:1;height:1px;background:${isLast?'transparent':ha(clr,.4)}"></div>
           </div>
           ${it.date?`<div class="tl-date" style="color:${clr}">${xh(it.date)}</div>`:''}
           <div class="tl-title" style="color:${p.tMain}">${xh(it.title)}</div>
           ${it.desc?`<div class="tl-desc" style="color:${sc}">${xh(it.desc)}</div>`:''}
         </div>`;
       }).join('');
-      return `<div style="display:flex;width:100%;align-items:flex-start;gap:0">${cells}</div>`;
+      return `<div style="display:flex;width:100%;align-items:flex-start">${cells}</div>`;
     }
+
+    // ── VERTICAL — sempre ajustável ──
+    const isCenter=align==='center'; const isRight=align==='right';
+
     const rows=items.map((it,i)=>{
       const clr=(it.color&&it.color.trim())?it.color.trim():p.c1;
+      const clrNext=i<items.length-1&&(items[i+1]?.color&&items[i+1].color.trim())?items[i+1].color.trim():p.c1;
       const isLast=i===items.length-1;
-      const flexDir=align==='right'?'flex-direction:row-reverse':'';
-      const textAlign=align==='right'?'text-align:right':'';
+
+      if(isCenter){
+        return `<div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:9px;height:9px;border-radius:50%;background:${clr};box-shadow:0 0 5px ${ha(clr,.5)}"></div>
+          <div style="padding:3px 0 ${isLast?0:3}px;">
+            ${it.date?`<div class="tl-date" style="color:${clr}">${xh(it.date)}</div>`:''}
+            <div class="tl-title" style="color:${p.tMain}">${xh(it.title)}</div>
+            ${it.desc?`<div class="tl-desc" style="color:${sc}">${xh(it.desc)}</div>`:''}
+          </div>
+          ${!isLast?`<div style="width:1px;height:${spacing}px;background:linear-gradient(to bottom,${ha(clr,.5)},${ha(clrNext,.3)})"></div>`:''}
+        </div>`;
+      }
+
+      const flexDir=isRight?'flex-direction:row-reverse':'';
+      const txtAlign=isRight?'text-align:right':'';
       return `<div style="display:flex;gap:9px;align-items:flex-start;${flexDir}">
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
-          <div style="width:11px;height:11px;border-radius:50%;background:${clr};border:2px solid ${clr};box-shadow:0 0 5px ${ha(clr,.4)}"></div>
-          ${!isLast?`<div style="width:2px;flex:1;min-height:12px;background:linear-gradient(to bottom,${ha(clr,.5)},${ha(clr,.15)});margin-top:2px"></div>`:''}
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+          <div style="width:9px;height:9px;border-radius:50%;background:${clr};box-shadow:0 0 5px ${ha(clr,.5)}"></div>
+          ${!isLast?`<div style="width:1px;height:${spacing}px;min-height:10px;background:linear-gradient(to bottom,${ha(clr,.5)},${ha(clrNext,.3)})"></div>`:''}
         </div>
-        <div style="flex:1;min-width:0;padding-bottom:${isLast?0:9}px;${textAlign}">
+        <div style="flex:1;min-width:0;padding-bottom:${isLast?0:7}px;${txtAlign}">
           ${it.date?`<div class="tl-date" style="color:${clr}">${xh(it.date)}</div>`:''}
           <div class="tl-title" style="color:${p.tMain}">${xh(it.title)}</div>
           ${it.desc?`<div class="tl-desc" style="color:${sc}">${xh(it.desc)}</div>`:''}
         </div>
       </div>`;
     }).join('');
-    return `<div style="display:flex;flex-direction:column;gap:0;width:100%">${rows}</div>`;
+
+    const wrapAlign=isCenter?'align-items:center':'';
+    return `<div style="display:flex;flex-direction:column;width:100%;${wrapAlign}">${rows}</div>`;
   }
   if(b.type==='code'){const langId=b.lang||'python';const ld=LANGS.find(l=>l.id===langId)||LANGS[0];const cbBg=p.cbBg||(dark?'rgba(0,0,0,.5)':'#F0F0F8');const mf=activeTypo.monoFont||"'Space Mono',monospace";return `<div class="code-block" style="background:${cbBg};border-left-color:${p.c1};font-family:${mf}"><div class="cbh" style="background:${dark?'rgba(0,0,0,.25)':'rgba(0,0,0,.06)'};color:${ld.color}"><div class="cbh-dots"><span></span><span></span><span></span></div><span class="cbh-lang">${ld.icon} ${ld.name}</span></div><pre style="color:${dark?'rgba(240,240,245,.85)':p.tMain};font-family:${mf}">${highlight(b.content||'',langId)}</pre></div>`;}
 
