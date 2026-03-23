@@ -131,6 +131,9 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#2C2C2E;pa
 .bt-divider{background:rgba(255,255,255,.07);color:#6B6B80;}
 .bt-tip{background:rgba(250,204,21,.12);color:#facc15;}
 .bt-compare{background:rgba(99,102,241,.12);color:#818cf8;}
+.bt-table{background:rgba(20,184,166,.12);color:#2dd4bf;}
+/* inline word highlight in text/highlight blocks */
+.ihl{border-radius:3px;padding:1px 4px;}
 .bactions{margin-left:auto;display:flex;gap:4px;align-items:center;}
 .lang-sel{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:3px 7px;outline:none;font-family:'Space Mono',monospace;cursor:pointer;}
 .lang-sel:focus{border-color:var(--accent);}
@@ -226,8 +229,9 @@ body.layout-h .slide{transform-origin:top center;}
 .step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
 .step-text{font-size:12.5px;line-height:1.5;padding-top:2px;}
 /* stat */
-.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
-.stat-card{border-radius:10px;padding:11px 13px;border-width:1px;border-style:solid;}
+.stat-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.stat-card{flex:1;min-width:110px;}
+.stat-card{border-radius:10px;padding:11px 13px;border-width:1px;border-style:solid;min-width:110px;}
 .stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;}
 .stat-label{font-size:11px;margin-top:3px;line-height:1.4;}
 /* quote */
@@ -243,8 +247,8 @@ body.layout-h .slide{transform-origin:top center;}
 .tip-text{font-size:12.5px;line-height:1.55;}
 /* compare */
 .compare-wrap{display:flex;flex-direction:column;gap:6px;width:100%;}
-.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.compare-col{border-radius:8px;padding:9px 11px;border-width:1px;border-style:solid;}
+.compare-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+.compare-col{border-radius:8px;padding:9px 11px;border-width:1px;border-style:solid;flex:1;min-width:120px;}
 .compare-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
 .compare-items{display:flex;flex-direction:column;gap:4px;}
 .compare-item{font-size:11.5px;line-height:1.4;display:flex;gap:5px;align-items:flex-start;}
@@ -960,16 +964,22 @@ function highlight(code, lang) {
   if (lang === 'java') {
     const KW = /\b(public|private|protected|static|final|void|class|interface|enum|extends|implements|new|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|finally|throw|throws|import|package|this|super|null|true|false|abstract|synchronized|volatile|transient|native|instanceof)\b/g;
     const TY = /\b(int|long|short|byte|float|double|boolean|char|String|Integer|Long|Float|Double|Boolean|Character|Object|List|ArrayList|Map|HashMap|Set|HashSet|Optional|var)\b/g;
+    // Annotations tokenized in the SAME tok() call as strings/comments to avoid placeholder collision
     const [r1, tk] = tok(c,
       /\/\/[^\n]*/g,
       /\/\*[\s\S]*?\*\//g,
       /"(?:[^"\\]|\\.)*"/g,
       /'(?:[^'\\]|\\.)*'/g,
-      /\b\d+\.?\d*[LlFfDd]?\b/g
+      /\b\d+\.?\d*[LlFfDd]?\b/g,
+      /@[A-Za-z]\w*/g
     );
-    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    const tf = tk.map(m => {
+      if (/^\d/.test(m))                            return cls_num(m);
+      if (m.startsWith('//') || m.startsWith('/*')) return cls_comment(m);
+      if (m.startsWith('@'))                        return w('at', m);
+      return cls_str(m);
+    });
     return rst(r1
-      .replace(/@\w+/g,m=>w('at',m))
       .replace(KW,m=>w('k',m))
       .replace(TY,m=>w('t',m))
       .replace(/\b([A-Z][a-zA-Z0-9_]*)\s*(?=\()/g,m=>w('f',m))
@@ -1245,6 +1255,7 @@ const BLOCK_TYPES = [
   { type:'code',    label:'Código',     badge:'bt-code',   emoji:'💻' },
   { type:'divider', label:'Divisor',    badge:'bt-divider',emoji:'─'  },
   { type:'timeline',label:'Linha do Tempo',badge:'bt-timeline',emoji:'🕐'},
+  { type:'table',   label:'Tabela',        badge:'bt-table',   emoji:'📋'},
 ];
 
 function getBadge(type) { return BLOCK_TYPES.find(b => b.type === type)?.badge || 'bt-text'; }
@@ -1338,17 +1349,29 @@ function renderBlocks(si) {
     let inner = '';
 
     if (b.type === 'text') {
-      inner = `<textarea rows="3" placeholder="Digite o texto..." oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>`;
+      inner = `<textarea rows="3" placeholder="Use ==palavra== para destacar..." oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>
+               <div class="hint-text">Use <strong>==palavra==</strong> para destacar com cor do tema, ou <strong>==palavra|#ffcc00==</strong> para cor personalizada</div>`;
     } else if (b.type === 'list') {
       const val = Array.isArray(b.content) ? b.content.join('\n') : (b.content||'');
+      const lcols = b.cols || 1;
       inner = `<textarea rows="4" placeholder="Um item por linha..." oninput="slides[${si}].blocks[${bi}].content=this.value.split('\\n')">${escTA(val)}</textarea>
-               <div class="hint-text">↑ Um item por linha</div>`;
+               <div class="hint-text">↑ Um item por linha</div>
+               <div style="padding:0 11px 8px;display:flex;align-items:center;gap:8px">
+                 <label style="margin:0;white-space:nowrap">Colunas:</label>
+                 <input type="number" min="1" max="4" value="${lcols}" style="width:60px" oninput="slides[${si}].blocks[${bi}].cols=Math.max(1,Math.min(4,+this.value||1))">
+               </div>`;
     } else if (b.type === 'steps') {
       const val = Array.isArray(b.content) ? b.content.join('\n') : (b.content||'');
+      const scols = b.cols || 1;
       inner = `<textarea rows="4" placeholder="Um passo por linha..." oninput="slides[${si}].blocks[${bi}].content=this.value.split('\\n')">${escTA(val)}</textarea>
-               <div class="hint-text">↑ Um passo por linha (numerados automaticamente)</div>`;
+               <div class="hint-text">↑ Um passo por linha (numerados automaticamente)</div>
+               <div style="padding:0 11px 8px;display:flex;align-items:center;gap:8px">
+                 <label style="margin:0;white-space:nowrap">Colunas:</label>
+                 <input type="number" min="1" max="4" value="${scols}" style="width:60px" oninput="slides[${si}].blocks[${bi}].cols=Math.max(1,Math.min(4,+this.value||1))">
+               </div>`;
     } else if (b.type === 'highlight') {
-      inner = `<textarea rows="3" placeholder="Texto em destaque..." oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>`;
+      inner = `<textarea rows="3" placeholder="Use ==palavra== para destacar..." oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>
+               <div class="hint-text">Use <strong>==palavra==</strong> para destacar com cor do tema, ou <strong>==palavra|#ffcc00==</strong> para cor personalizada</div>`;
     } else if (b.type === 'quote') {
       inner = `<div style="padding:8px 11px;display:flex;flex-direction:column;gap:6px">
         <div><label>Citação</label><textarea rows="2" oninput="slides[${si}].blocks[${bi}].quoteText=this.value">${escTA(b.quoteText||'')}</textarea></div>
@@ -1378,41 +1401,67 @@ function renderBlocks(si) {
         <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addStat(${si},${bi})" ${stats.length>=4?'disabled':''}>+ Adicionar stat</button>
       </div>`;
     } else if (b.type === 'compare') {
-      const left  = b.leftTitle  || '✅ Bom';
-      const right = b.rightTitle || '❌ Ruim';
-      const lItems = Array.isArray(b.leftItems)  ? b.leftItems.join('\n')  : (b.leftItems||'');
-      const rItems = Array.isArray(b.rightItems) ? b.rightItems.join('\n') : (b.rightItems||'');
+      // n-column compare editor
+      if (!b.cols || !Array.isArray(b.cols)) {
+        // migrate old 2-col format
+        slides[si].blocks[bi].cols = [
+          {title: b.leftTitle||'✅ Bom', icon: b.leftIcon||'✓', color: b.leftColor||'', items: b.leftItems||[]},
+          {title: b.rightTitle||'❌ Ruim', icon: b.rightIcon||'✕', color: b.rightColor||'', items: b.rightItems||[]}
+        ];
+        delete slides[si].blocks[bi].leftTitle; delete slides[si].blocks[bi].rightTitle;
+        delete slides[si].blocks[bi].leftItems; delete slides[si].blocks[bi].rightItems;
+        delete slides[si].blocks[bi].leftColor; delete slides[si].blocks[bi].rightColor;
+        delete slides[si].blocks[bi].leftIcon;  delete slides[si].blocks[bi].rightIcon;
+      }
+      const cols = slides[si].blocks[bi].cols;
+      const colsHtml = cols.map((col, ci) => `
+        <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;padding:8px 10px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+            <span style="font-size:10px;color:var(--muted);font-weight:700">Coluna ${ci+1}</span>
+            <div style="display:flex;gap:3px">
+              ${ci>0?`<button class="btn-reorder" onclick="moveCmpCol(${si},${bi},${ci},-1)">←</button>`:''}
+              ${ci<cols.length-1?`<button class="btn-reorder" onclick="moveCmpCol(${si},${bi},${ci},1)">→</button>`:''}
+              ${cols.length>1?`<button class="btn btn-danger" style="font-size:10px;padding:2px 7px" onclick="removeCmpCol(${si},${bi},${ci})">✕</button>`:''}
+            </div>
+          </div>
+          <div><label>Título</label><input type="text" value="${esc(col.title||'')}" oninput="slides[${si}].blocks[${bi}].cols[${ci}].title=this.value"></div>
+          <div style="display:flex;gap:5px;align-items:center">
+            <label style="margin:0;white-space:nowrap">Ícone</label>
+            <input type="text" value="${esc(col.icon||'')}" style="width:50px" placeholder="✓" oninput="slides[${si}].blocks[${bi}].cols[${ci}].icon=this.value">
+            <label style="margin:0;white-space:nowrap">Cor</label>
+            <input type="color" value="${col.color||'#6366f1'}" style="width:32px;height:26px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;padding:1px" oninput="slides[${si}].blocks[${bi}].cols[${ci}].color=this.value">
+            <input type="text" value="${esc(col.color||'')}" placeholder="vazio=paleta" style="flex:1" oninput="slides[${si}].blocks[${bi}].cols[${ci}].color=this.value">
+            <button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].cols[${ci}].color=''" title="↺">↺</button>
+          </div>
+          <div><label>Itens (um/linha)</label><textarea rows="3" oninput="slides[${si}].blocks[${bi}].cols[${ci}].items=this.value.split('\\n')">${escTA(Array.isArray(col.items)?col.items.join('\n'):(col.items||''))}</textarea></div>
+        </div>`).join('');
       inner = `<div style="padding:8px 11px;display:flex;flex-direction:column;gap:6px">
-        <div class="row2">
-          <div><label>Título Esquerda</label><input type="text" value="${esc(left)}" oninput="slides[${si}].blocks[${bi}].leftTitle=this.value"></div>
-          <div><label>Título Direita</label><input type="text" value="${esc(right)}" oninput="slides[${si}].blocks[${bi}].rightTitle=this.value"></div>
+        ${colsHtml}
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addCmpCol(${si},${bi})">+ Adicionar coluna</button>
+      </div>`;
+    } else if (b.type === 'table') {
+      const headers = b.headers || ['Coluna 1','Coluna 2'];
+      const rows = b.rows || [['',''],['','']];
+      const numCols = headers.length;
+      const headerInputs = headers.map((h,hi) => `<input type="text" value="${esc(h)}" placeholder="Col ${hi+1}" style="flex:1;min-width:60px" oninput="slides[${si}].blocks[${bi}].headers[${hi}]=this.value">`).join('');
+      const rowsHtml = rows.map((row, ri) => {
+        const cells = headers.map((_,ci) => `<input type="text" value="${esc(row[ci]||'')}" style="flex:1;min-width:60px" placeholder="..." oninput="slides[${si}].blocks[${bi}].rows[${ri}][${ci}]=this.value">`).join('');
+        return `<div style="display:flex;gap:4px;align-items:center">${cells}<button class="btn btn-danger" style="flex-shrink:0;padding:3px 7px;font-size:10px" onclick="removeTableRow(${si},${bi},${ri})">✕</button></div>`;
+      }).join('');
+      inner = `<div style="padding:8px 11px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+          <label style="margin:0;white-space:nowrap">Colunas:</label>
+          <input type="number" min="1" max="6" value="${numCols}" style="width:55px" oninput="resizeTableCols(${si},${bi},+this.value||1)">
         </div>
-        <div class="row2">
-          <div style="display:flex;flex-direction:column;gap:4px">
-            <label>Cor Esquerda</label>
-            <div style="display:flex;gap:5px;align-items:center">
-              <input type="color" value="${b.leftColor||'#22c55e'}" oninput="slides[${si}].blocks[${bi}].leftColor=this.value" style="width:36px;height:28px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px">
-              <input type="text" value="${esc(b.leftColor||'')}" placeholder="vazio = paleta" style="flex:1" oninput="slides[${si}].blocks[${bi}].leftColor=this.value">
-              <button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].leftColor=''" title="Usar cor da paleta">↺</button>
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px">
-            <label>Cor Direita</label>
-            <div style="display:flex;gap:5px;align-items:center">
-              <input type="color" value="${b.rightColor||'#f87171'}" oninput="slides[${si}].blocks[${bi}].rightColor=this.value" style="width:36px;height:28px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px">
-              <input type="text" value="${esc(b.rightColor||'')}" placeholder="vazio = paleta" style="flex:1" oninput="slides[${si}].blocks[${bi}].rightColor=this.value">
-              <button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].rightColor=''" title="Usar cor da paleta">↺</button>
-            </div>
-          </div>
+        <div>
+          <label>Cabeçalhos</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">${headerInputs}</div>
         </div>
-        <div class="row2">
-          <div><label>Ícone Esquerda</label><input type="text" value="${esc(b.leftIcon||'✓')}" style="max-width:70px" oninput="slides[${si}].blocks[${bi}].leftIcon=this.value"></div>
-          <div><label>Ícone Direita</label><input type="text" value="${esc(b.rightIcon||'✕')}" style="max-width:70px" oninput="slides[${si}].blocks[${bi}].rightIcon=this.value"></div>
+        <div>
+          <label>Linhas</label>
+          <div style="display:flex;flex-direction:column;gap:4px">${rowsHtml}</div>
         </div>
-        <div class="row2">
-          <div><label>Itens esquerda (um/linha)</label><textarea rows="3" oninput="slides[${si}].blocks[${bi}].leftItems=this.value.split('\\n')">${escTA(lItems)}</textarea></div>
-          <div><label>Itens direita (um/linha)</label><textarea rows="3" oninput="slides[${si}].blocks[${bi}].rightItems=this.value.split('\\n')">${escTA(rItems)}</textarea></div>
-        </div>
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addTableRow(${si},${bi})">+ Adicionar linha</button>
       </div>`;
     } else if (b.type === 'divider') {
       inner = `<div style="padding:7px 11px"><label>Texto do divisor (opcional)</label><input type="text" value="${esc(b.divLabel||'')}" placeholder="ou deixe vazio" oninput="slides[${si}].blocks[${bi}].divLabel=this.value"></div>`;
@@ -1730,7 +1779,7 @@ function stopMCDrag() {
 }
 
 function addBlock(si, type) {
-  const defaults = { text:{content:''}, list:{content:[]}, steps:{content:[]}, highlight:{content:''}, quote:{quoteText:'',quoteAuthor:''}, tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''}, stat:{stats:[{val:'',label:''},{val:'',label:''}]}, compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]}, image:{images:[]}, code:{lang:'python',content:''}, divider:{divLabel:''}, timeline:{orient:'vertical',align:'left',stretch:true,spacing:18,items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]} };
+  const defaults = { text:{content:''}, list:{content:[],cols:1}, steps:{content:[],cols:1}, highlight:{content:''}, quote:{quoteText:'',quoteAuthor:''}, tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''}, stat:{stats:[{val:'',label:''},{val:'',label:''}]}, compare:{cols:[{title:'✅ Bom',icon:'✓',color:'',items:[]}]}, image:{images:[]}, code:{lang:'python',content:''}, divider:{divLabel:''}, timeline:{orient:'vertical',align:'left',stretch:true,spacing:18,items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]}, table:{headers:['Coluna 1','Coluna 2'],rows:[['',''],['','']]} };
   slides[si].blocks.push({ type, ...defaults[type] });
   renderBlocks(si);
 }
@@ -1739,6 +1788,51 @@ function moveBlock(si, bi, d) { const a=slides[si].blocks,ni=bi+d; if(ni<0||ni>=
 function addTLItem(si,bi){if(!slides[si].blocks[bi].items)slides[si].blocks[bi].items=[];slides[si].blocks[bi].items.push({date:'',title:'',desc:'',color:''});renderBlocks(si);}
 function removeTLItem(si,bi,ii){slides[si].blocks[bi].items.splice(ii,1);renderBlocks(si);}
 function moveTLItem(si,bi,ii,d){const a=slides[si].blocks[bi].items,ni=ii+d;if(ni<0||ni>=a.length)return;[a[ii],a[ni]]=[a[ni],a[ii]];renderBlocks(si);}
+function addCmpCol(si, bi) {
+  if (!slides[si].blocks[bi].cols) slides[si].blocks[bi].cols = [];
+  slides[si].blocks[bi].cols.push({title:'Nova coluna',icon:'·',color:'',items:[]});
+  renderBlocks(si);
+}
+function removeCmpCol(si, bi, ci) {
+  slides[si].blocks[bi].cols.splice(ci, 1);
+  renderBlocks(si);
+}
+function moveCmpCol(si, bi, ci, d) {
+  const a = slides[si].blocks[bi].cols, ni = ci+d;
+  if(ni<0||ni>=a.length) return;
+  [a[ci],a[ni]]=[a[ni],a[ci]];
+  renderBlocks(si);
+}
+function addTableRow(si, bi) {
+  const b = slides[si].blocks[bi];
+  const ncols = (b.headers||[]).length || 2;
+  if (!b.rows) b.rows = [];
+  b.rows.push(Array(ncols).fill(''));
+  renderBlocks(si);
+}
+function removeTableRow(si, bi, ri) {
+  slides[si].blocks[bi].rows.splice(ri, 1);
+  renderBlocks(si);
+}
+function resizeTableCols(si, bi, n) {
+  n = Math.max(1, Math.min(6, n));
+  const b = slides[si].blocks[bi];
+  const oldN = (b.headers||[]).length;
+  if (n > oldN) {
+    for (let i=oldN; i<n; i++) { b.headers.push('Coluna '+(i+1)); (b.rows||[]).forEach(r=>r.push('')); }
+  } else {
+    b.headers = b.headers.slice(0,n);
+    (b.rows||[]).forEach(r => { r.splice(n); });
+  }
+  renderBlocks(si);
+}
+// inlineHL: parses ==word== or ==word|#color== syntax into highlighted spans
+function inlineHL(text, themeColor) {
+  return xh(text).replace(/==([^=|]+?)(?:\|([^=]+?))?==/g, (_, word, clr) => {
+    const c = clr ? clr.trim() : themeColor;
+    return `<span class="ihl" style="background:${c}22;color:${c};border-radius:3px;padding:1px 4px">${word}</span>`;
+  });
+}
 function addSlide() {
   const newIdx = slides.length;
   slides.push({eyebrow:`Tópico #0${slides.length+1}`,title:'Novo tópico',hl:'',blocks:[{type:'text',content:''}]});
@@ -1762,7 +1856,7 @@ function loadExample() {
     { eyebrow:'Dados', title:'Impacto no projeto', hl:'Impacto',
       blocks:[{type:'stat',stats:[{val:'76%',label:'Menos bugs reportados'},{val:'2×',label:'Velocidade de revisão'},{val:'40%',label:'Menos tempo de onboarding'},{val:'90%',label:'Cobertura de testes'}]}]},
     { eyebrow:'Comparativo', title:'Bom vs Ruim', hl:'vs',
-      blocks:[{type:'compare',leftTitle:'✅ Clean Code',rightTitle:'❌ Código Ruim',leftItems:['Nomes descritivos','Funções pequenas','Testes automatizados'],rightItems:['Variáveis a, b, c','Funções de 200 linhas','Zero testes']}]},
+      blocks:[{type:'compare',cols:[{title:'✅ Clean Code',icon:'✓',color:'#22c55e',items:['Nomes descritivos','Funções pequenas','Testes automatizados']},{title:'❌ Código Ruim',icon:'✕',color:'#f87171',items:['Variáveis a, b, c','Funções de 200 linhas','Zero testes']}]}]},
     { eyebrow:'Princípio chave', title:'Regra do Boy Scout', hl:'Boy Scout',
       blocks:[{type:'quote',quoteText:'"Deixe o código sempre mais limpo do que você encontrou."',quoteAuthor:'Robert C. Martin'},{type:'tip',tipIcon:'📌',tipLabel:'LEMBRE-SE',tipText:'Aplique em cada PR, não só em sprints de refatoração.'}]}
   ];
@@ -2445,25 +2539,29 @@ function renderBlockHTML(b, p) {
   const dark = isDark(p);
   const subClr = p.tSub;
 
-  if (b.type === 'text') return `<p style="color:${subClr}">${xh(b.content)}</p>`;
+  if (b.type === 'text') return `<p style="color:${subClr}">${inlineHL(b.content||'', p.c1)}</p>`;
 
   if (b.type === 'list') {
     const items = (Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim())
-      .map(l => `<li><span class="li-arr" style="color:${p.c1}">▹</span><span style="color:${subClr}">${xh(l)}</span></li>`).join('');
-    return `<ul>${items}</ul>`;
+      .map(l => `<li><span class="li-arr" style="color:${p.c1}">▹</span><span style="color:${subClr}">${xh(l)}</span></li>`);
+    const cols = Math.max(1, Math.min(4, b.cols||1));
+    const grid = cols > 1 ? `display:grid;grid-template-columns:repeat(${cols},1fr);gap:4px 10px;` : '';
+    return `<ul style="${grid}">${items.join('')}</ul>`;
   }
 
   if (b.type === 'steps') {
     const items = (Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim());
+    const scols = Math.max(1, Math.min(4, b.cols||1));
     const rows = items.map((l,i) => `<div class="step-row">
       <div class="step-num" style="background:${ha(p.c1,.15)};color:${p.c1};border:1px solid ${ha(p.c1,.3)}">${i+1}</div>
       <div class="step-text" style="color:${subClr}">${xh(l)}</div>
     </div>`).join('');
-    return `<div class="steps-wrap">${rows}</div>`;
+    const grid = scols > 1 ? `display:grid;grid-template-columns:repeat(${scols},1fr);gap:4px 8px;` : '';
+    return `<div class="steps-wrap" style="${grid}">${rows}</div>`;
   }
 
   if (b.type === 'highlight') {
-    return `<div class="hl-card" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c2};color:${p.tMain}">${xh(b.content)}</div>`;
+    return `<div class="hl-card" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c2};color:${p.tMain}">${inlineHL(b.content||'', p.c1)}</div>`;
   }
 
   if (b.type === 'quote') {
@@ -2497,26 +2595,40 @@ function renderBlockHTML(b, p) {
   }
 
   if (b.type === 'compare') {
-    const lClr = (b.leftColor  && b.leftColor.trim())  ? b.leftColor.trim()  : p.c1;
-    const rClr = (b.rightColor && b.rightColor.trim()) ? b.rightColor.trim() : '#f87171';
-    const lIco = b.leftIcon  || '✓';
-    const rIco = b.rightIcon || '✕';
-    const lItems = (Array.isArray(b.leftItems)?b.leftItems:(b.leftItems||'').split('\n')).filter(l=>l.trim())
-      .map(l => `<div class="compare-item"><span style="color:${lClr};font-size:10px">${xh(lIco)}</span><span style="color:${p.tMain}">${xh(l)}</span></div>`).join('');
-    const rItems = (Array.isArray(b.rightItems)?b.rightItems:(b.rightItems||'').split('\n')).filter(l=>l.trim())
-      .map(l => `<div class="compare-item"><span style="color:${rClr};font-size:10px">${xh(rIco)}</span><span style="color:${subClr}">${xh(l)}</span></div>`).join('');
-    return `<div class="compare-wrap">
-      <div class="compare-row">
-        <div class="compare-col" style="background:${ha(lClr,dark?.07:.05)};border-color:${ha(lClr,.2)}">
-          <div class="compare-head" style="color:${lClr}">${xh(b.leftTitle||'✅ Bom')}</div>
-          <div class="compare-items">${lItems}</div>
-        </div>
-        <div class="compare-col" style="background:${ha(rClr,dark?.07:.06)};border-color:${ha(rClr,.2)}">
-          <div class="compare-head" style="color:${rClr}">${xh(b.rightTitle||'❌ Ruim')}</div>
-          <div class="compare-items">${rItems}</div>
-        </div>
-      </div>
-    </div>`;
+    // Migrate old 2-col format if needed
+    let cols = b.cols;
+    if (!cols || !Array.isArray(cols)) {
+      cols = [
+        {title: b.leftTitle||'✅ Bom',  icon: b.leftIcon||'✓',  color: b.leftColor||'',  items: b.leftItems||[]},
+        {title: b.rightTitle||'❌ Ruim', icon: b.rightIcon||'✕', color: b.rightColor||'', items: b.rightItems||[]}
+      ];
+    }
+    const colsHtml = cols.map(col => {
+      const clr = (col.color && col.color.trim()) ? col.color.trim() : p.c1;
+      const ico = col.icon || '·';
+      const items = (Array.isArray(col.items)?col.items:(col.items||'').split('\n')).filter(l=>l.trim())
+        .map(l => `<div class="compare-item"><span style="color:${clr};font-size:10px">${xh(ico)}</span><span style="color:${p.tMain}">${xh(l)}</span></div>`).join('');
+      return `<div class="compare-col" style="background:${ha(clr,dark?.07:.05)};border-color:${ha(clr,.2)}">
+        <div class="compare-head" style="color:${clr}">${xh(col.title||'')}</div>
+        <div class="compare-items">${items}</div>
+      </div>`;
+    }).join('');
+    return `<div class="compare-wrap"><div class="compare-row">${colsHtml}</div></div>`;
+  }
+
+  if (b.type === 'table') {
+    const headers = b.headers || [];
+    const rows = b.rows || [];
+    if (!headers.length) return '';
+    const thBg = dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
+    const tdBg = dark ? 'rgba(255,255,255,.02)' : 'rgba(0,0,0,.02)';
+    const borderClr = ha(p.c1, .25);
+    const thCells = headers.map(h => `<th style="padding:6px 9px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${p.c1};background:${ha(p.c1,dark?.12:.08)};border:1px solid ${borderClr};white-space:nowrap">${xh(h)}</th>`).join('');
+    const bodyRows = rows.map((row,ri) => {
+      const cells = headers.map((_,ci) => `<td style="padding:5px 9px;font-size:11.5px;color:${p.tSub};border:1px solid ${ha(p.c1,.1)};background:${ri%2===0?tdBg:'transparent'}">${xh(row[ci]||'')}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<div style="overflow:hidden;border-radius:8px;border:1px solid ${borderClr}"><table style="width:100%;border-collapse:collapse;font-family:inherit"><thead><tr>${thCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
   }
 
   if (b.type === 'divider') {

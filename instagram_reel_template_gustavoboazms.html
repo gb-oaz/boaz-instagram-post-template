@@ -143,6 +143,8 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#2C2C2E;pa
 
 /* HINT TEXT */
 .hint-text{font-size:10.5px;color:var(--muted);padding:1px 11px 6px;}
+.bt-table{background:rgba(20,184,166,.12);color:#2dd4bf;}
+.ihl{border-radius:3px;padding:1px 4px;}
 
 /* ══ PREVIEW SECTION ══ */
 .preview-section{width:100%;max-width:780px;}
@@ -214,14 +216,14 @@ body.layout-h .reels-wrapper{gap:16px;}
 .tip-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;margin-bottom:3px;}
 .tip-text{font-size:12.5px;line-height:1.5;}
 /* stat */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.stat-card{border-radius:9px;padding:10px 12px;border-width:1px;border-style:solid;}
+.stat-grid{display:flex;flex-wrap:wrap;gap:7px;}
+.stat-card{border-radius:9px;padding:10px 12px;border-width:1px;border-style:solid;flex:1;min-width:90px;}
 .stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1;}
 .stat-label{font-size:10.5px;margin-top:2px;line-height:1.3;}
 /* compare */
 .compare-wrap{display:flex;flex-direction:column;gap:6px;width:100%;}
-.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.compare-col{border-radius:8px;padding:9px 11px;border-width:1px;border-style:solid;}
+.compare-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+.compare-col{border-radius:8px;padding:9px 11px;border-width:1px;border-style:solid;flex:1;min-width:90px;}
 .compare-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
 .compare-items{display:flex;flex-direction:column;gap:4px;}
 .compare-item{font-size:11px;line-height:1.4;display:flex;gap:5px;align-items:flex-start;}
@@ -831,6 +833,7 @@ const BLOCK_TYPES=[
   {type:'compare',label:'Comparar',badge:'bt-compare',emoji:'⚖️'},
   {type:'image',label:'Imagem',badge:'bt-image',emoji:'🖼️'},
   {type:'code',label:'Código',badge:'bt-code',emoji:'💻'},
+  {type:'table',label:'Tabela',badge:'bt-table',emoji:'🗂️'},
   {type:'divider',label:'Divisor',badge:'bt-divider',emoji:'─'},
   {type:'timeline',label:'Linha do Tempo',badge:'bt-timeline',emoji:'🕐'},
 ];
@@ -935,12 +938,13 @@ function renderBlocks(si){
     const div=document.createElement('div');
     div.style.cssText='background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:7px;overflow:hidden;';
     let inner='';
-    if(b.type==='text') inner=`<textarea rows="3" style="border:none;border-radius:0;background:transparent;padding:7px 10px;font-size:12.5px;line-height:1.6;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>`;
+    if(b.type==='text'){inner=`<textarea rows="3" style="border:none;border-radius:0;background:transparent;padding:7px 10px;font-size:12.5px;line-height:1.6;width:100%;color:var(--text);outline:none;resize:vertical" placeholder="Use ==palavra== para destacar…" oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea><div style="font-size:10px;color:var(--muted);padding:2px 10px 6px">Use <strong>==palavra==</strong> para destacar, ou <strong>==palavra|#cor==</strong></div>`;}
     else if(b.type==='list'||b.type==='steps'){
       const val=Array.isArray(b.content)?b.content.join('\n'):(b.content||'');
-      inner=`<textarea rows="4" style="border:none;border-radius:0;background:transparent;padding:7px 10px;font-size:12.5px;line-height:1.6;width:100%;color:var(--text);outline:none;resize:vertical" placeholder="Um item por linha…" oninput="slides[${si}].blocks[${bi}].content=this.value.split('\\n')">${escTA(val)}</textarea><div style="font-size:10px;color:var(--muted);padding:2px 10px 6px">↑ Um item por linha</div>`;
+      const lcols=b.cols||1;
+      inner=`<textarea rows="4" style="border:none;border-radius:0;background:transparent;padding:7px 10px;font-size:12.5px;line-height:1.6;width:100%;color:var(--text);outline:none;resize:vertical" placeholder="Um item por linha…" oninput="slides[${si}].blocks[${bi}].content=this.value.split('\\n')">${escTA(val)}</textarea><div style="font-size:10px;color:var(--muted);padding:2px 10px 4px">↑ Um item por linha</div><div style="padding:0 10px 7px;display:flex;align-items:center;gap:7px"><label style="margin:0;white-space:nowrap;font-size:10px">Colunas:</label><input type="number" min="1" max="3" value="${lcols}" style="width:50px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:2px 6px;outline:none" oninput="slides[${si}].blocks[${bi}].cols=Math.max(1,Math.min(3,+this.value||1))"></div>`;
     } else if(b.type==='highlight'){
-      inner=`<textarea rows="3" style="border:none;border-radius:0;background:transparent;padding:7px 10px;font-size:12.5px;line-height:1.6;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>`;
+      inner=`<textarea rows="3" style="border:none;border-radius:0;background:transparent;padding:7px 10px;font-size:12.5px;line-height:1.6;width:100%;color:var(--text);outline:none;resize:vertical" placeholder="Use ==palavra== para destacar…" oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea><div style="font-size:10px;color:var(--muted);padding:2px 10px 6px">Use <strong>==palavra==</strong> para destacar, ou <strong>==palavra|#cor==</strong></div>`;
     } else if(b.type==='quote'){
       inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px"><div><label>Citação</label><textarea rows="2" style="border:1px solid var(--border);border-radius:6px;background:transparent;padding:6px 10px;font-size:12.5px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].quoteText=this.value">${escTA(b.quoteText||'')}</textarea></div><div><label>Autor</label><input type="text" value="${esc(b.quoteAuthor||'')}" placeholder="Autor (opcional)" oninput="slides[${si}].blocks[${bi}].quoteAuthor=this.value"></div></div>`;
     } else if(b.type==='tip'){
@@ -1012,21 +1016,38 @@ function renderBlocks(si){
       const langOpts=LANGS.map(l=>`<option value="${l.id}" ${(b.lang||'python')===l.id?'selected':''}>${l.icon} ${l.name}</option>`).join('');
       const ld=LANGS.find(l=>l.id===(b.lang||'python'))||LANGS[0];
       inner=`<div style="padding:4px 9px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:7px"><span style="font-size:10px;color:var(--muted)">Linguagem:</span><select style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;padding:2px 6px;outline:none" onchange="slides[${si}].blocks[${bi}].lang=this.value;renderBlocks(${si})">${langOpts}</select><span style="font-size:10px;font-weight:700;color:${ld.color}">${ld.icon} ${ld.name}</span></div><textarea rows="5" style="font-family:'Space Mono',monospace;font-size:11px;border:none;border-radius:0;background:transparent;padding:7px 10px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].content=this.value">${escTA(b.content||'')}</textarea>`;
+    } else if(b.type==='table'){
+      const headers=b.headers||[]; const rows=b.rows||[]; const numCols=headers.length;
+      const headerInputs=headers.map((h,hi)=>`<input type="text" value="${esc(h)}" placeholder="Col ${hi+1}" style="flex:1;min-width:50px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:4px 7px;outline:none" oninput="slides[${si}].blocks[${bi}].headers[${hi}]=this.value">`).join('');
+      const rowsHtml=rows.map((row,ri)=>{const cells=headers.map((_,ci)=>`<input type="text" value="${esc(row[ci]||'')}" style="flex:1;min-width:50px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:4px 7px;outline:none" placeholder="…" oninput="slides[${si}].blocks[${bi}].rows[${ri}][${ci}]=this.value">`).join('');return `<div style="display:flex;gap:3px;align-items:center">${cells}<button class="btn btn-danger" style="flex-shrink:0;padding:2px 6px;font-size:9px" onclick="removeTableRowR(${si},${bi},${ri})">✕</button></div>`;}).join('');
+      inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px"><div style="display:flex;gap:5px;align-items:center"><label style="margin:0;white-space:nowrap;font-size:10px">Colunas:</label><input type="number" min="1" max="5" value="${numCols}" style="width:50px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 6px;outline:none" oninput="resizeTableColsR(${si},${bi},+this.value||1)"></div><div><label>Cabeçalhos</label><div style="display:flex;gap:3px;flex-wrap:wrap">${headerInputs}</div></div><div><label>Linhas</label><div style="display:flex;flex-direction:column;gap:3px">${rowsHtml}</div></div><button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addTableRowR(${si},${bi})">+ Linha</button></div>`;
     } else if(b.type==='divider'){
       inner=`<div style="padding:7px 10px"><label>Texto do divisor (opcional)</label><input type="text" value="${esc(b.divLabel||'')}" placeholder="ou deixe vazio" oninput="slides[${si}].blocks[${bi}].divLabel=this.value"></div>`;
     } else if(b.type==='compare'){
-      const left=b.leftTitle||'✅ Bom'; const right=b.rightTitle||'❌ Ruim';
-      const lItems=Array.isArray(b.leftItems)?b.leftItems.join('\n'):(b.leftItems||'');
-      const rItems=Array.isArray(b.rightItems)?b.rightItems.join('\n'):(b.rightItems||'');
-      inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px">
-        <div class="row2"><div><label>Título Esquerda</label><input type="text" value="${esc(left)}" oninput="slides[${si}].blocks[${bi}].leftTitle=this.value"></div><div><label>Título Direita</label><input type="text" value="${esc(right)}" oninput="slides[${si}].blocks[${bi}].rightTitle=this.value"></div></div>
-        <div class="row2">
-          <div style="display:flex;flex-direction:column;gap:3px"><label>Cor Esquerda</label><div style="display:flex;gap:4px;align-items:center"><input type="color" value="${b.leftColor||'#22c55e'}" oninput="slides[${si}].blocks[${bi}].leftColor=this.value" style="width:32px;height:24px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px"><input type="text" value="${esc(b.leftColor||'')}" placeholder="vazio=paleta" style="flex:1;font-size:10px" oninput="slides[${si}].blocks[${bi}].leftColor=this.value"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].leftColor=''" title="Paleta">↺</button></div></div>
-          <div style="display:flex;flex-direction:column;gap:3px"><label>Cor Direita</label><div style="display:flex;gap:4px;align-items:center"><input type="color" value="${b.rightColor||'#f87171'}" oninput="slides[${si}].blocks[${bi}].rightColor=this.value" style="width:32px;height:24px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;padding:2px"><input type="text" value="${esc(b.rightColor||'')}" placeholder="vazio=paleta" style="flex:1;font-size:10px" oninput="slides[${si}].blocks[${bi}].rightColor=this.value"><button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].rightColor=''" title="Paleta">↺</button></div></div>
-        </div>
-        <div class="row2"><div><label>Ícone Esquerda</label><input type="text" value="${esc(b.leftIcon||'✓')}" style="max-width:60px" oninput="slides[${si}].blocks[${bi}].leftIcon=this.value"></div><div><label>Ícone Direita</label><input type="text" value="${esc(b.rightIcon||'✕')}" style="max-width:60px" oninput="slides[${si}].blocks[${bi}].rightIcon=this.value"></div></div>
-        <div class="row2"><div><label>Itens esquerda (um/linha)</label><textarea rows="3" style="border:1px solid var(--border);border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].leftItems=this.value.split('\\n')">${escTA(lItems)}</textarea></div><div><label>Itens direita (um/linha)</label><textarea rows="3" style="border:1px solid var(--border);border-radius:6px;background:transparent;padding:5px 8px;font-size:11px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].rightItems=this.value.split('\\n')">${escTA(rItems)}</textarea></div></div>
-      </div>`;
+      if(!b.cols||!Array.isArray(b.cols)){slides[si].blocks[bi].cols=[{title:b.leftTitle||'✅ Bom',icon:b.leftIcon||'✓',color:b.leftColor||'',items:b.leftItems||[]},{title:b.rightTitle||'❌ Ruim',icon:b.rightIcon||'✕',color:b.rightColor||'',items:b.rightItems||[]}];}
+      const cols=slides[si].blocks[bi].cols;
+      const colsHtml=cols.map((col,ci)=>`
+        <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:7px 9px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+            <span style="font-size:9.5px;color:var(--muted);font-weight:700">Coluna ${ci+1}</span>
+            <div style="display:flex;gap:3px">
+              ${ci>0?`<button class="btn-reorder" onclick="moveCmpColR(${si},${bi},${ci},-1)">←</button>`:''}
+              ${ci<cols.length-1?`<button class="btn-reorder" onclick="moveCmpColR(${si},${bi},${ci},1)">→</button>`:''}
+              ${cols.length>1?`<button class="btn btn-danger" style="font-size:9px;padding:1px 6px" onclick="removeCmpColR(${si},${bi},${ci})">✕</button>`:''}
+            </div>
+          </div>
+          <div><label>Título</label><input type="text" value="${esc(col.title||'')}" oninput="slides[${si}].blocks[${bi}].cols[${ci}].title=this.value"></div>
+          <div style="display:flex;gap:4px;align-items:center">
+            <label style="margin:0;font-size:10px;white-space:nowrap">Ícone</label>
+            <input type="text" value="${esc(col.icon||'')}" style="width:44px" placeholder="✓" oninput="slides[${si}].blocks[${bi}].cols[${ci}].icon=this.value">
+            <label style="margin:0;font-size:10px;white-space:nowrap">Cor</label>
+            <input type="color" value="${col.color||'#6366f1'}" style="width:28px;height:24px;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;padding:1px" oninput="slides[${si}].blocks[${bi}].cols[${ci}].color=this.value">
+            <input type="text" value="${esc(col.color||'')}" placeholder="vazio=paleta" style="flex:1;font-size:10px" oninput="slides[${si}].blocks[${bi}].cols[${ci}].color=this.value">
+            <button class="btn btn-ghost btn-sm" onclick="slides[${si}].blocks[${bi}].cols[${ci}].color=''" title="↺">↺</button>
+          </div>
+          <div><label>Itens (um/linha)</label><textarea rows="3" style="border:1px solid var(--border);border-radius:5px;background:transparent;padding:5px 7px;font-size:10.5px;width:100%;color:var(--text);outline:none;resize:vertical" oninput="slides[${si}].blocks[${bi}].cols[${ci}].items=this.value.split('\n')">${escTA(Array.isArray(col.items)?col.items.join('\n'):(col.items||''))}</textarea></div>
+        </div>`).join('');
+      inner=`<div style="padding:7px 10px;display:flex;flex-direction:column;gap:5px">${colsHtml}<button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addCmpColR(${si},${bi})">+ Adicionar coluna</button></div>`;
     } else if(b.type==='timeline'){
       const items=b.items||[]; const orient=b.orient||'vertical';
       const align=b.align||(orient==='horizontal'?'center':'left');
@@ -1059,8 +1080,8 @@ function renderBlocks(si){
         <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="addTLItem(${si},${bi})">+ Adicionar evento</button>
       </div>`;
     }
-    const labels={text:'Texto',list:'Lista',steps:'Passos',highlight:'Destaque',quote:'Citação',tip:'Dica',stat:'Stats',image:'Imagem',code:'Código',compare:'Comparar',divider:'Divisor',timeline:'Linha do Tempo'};
-    const colors={text:'#9090b0',list:'#00F5A0',steps:'#fb923c',highlight:'#00C8FF',quote:'#e879f9',tip:'#facc15',stat:'#34d399',image:'#38bdf8',code:'#ffb400',compare:'#a78bfa',divider:'#94a3b8',timeline:'#f472b6'};
+    const labels={text:'Texto',list:'Lista',steps:'Passos',highlight:'Destaque',quote:'Citação',tip:'Dica',stat:'Stats',image:'Imagem',code:'Código',compare:'Comparar',table:'Tabela',divider:'Divisor',timeline:'Linha do Tempo'};
+    const colors={text:'#9090b0',list:'#00F5A0',steps:'#fb923c',highlight:'#00C8FF',quote:'#e879f9',tip:'#facc15',stat:'#34d399',image:'#38bdf8',code:'#ffb400',compare:'#a78bfa',table:'#2dd4bf',divider:'#94a3b8',timeline:'#f472b6'};
     div.innerHTML=`<div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)">
       <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 6px;border-radius:100px;background:${colors[b.type]}22;color:${colors[b.type]}">${labels[b.type]||b.type}</span>
       <div style="margin-left:auto;display:flex;gap:4px">
@@ -1074,6 +1095,12 @@ function renderBlocks(si){
 }
 
 function addStat(si,bi){if(!slides[si].blocks[bi].stats)slides[si].blocks[bi].stats=[];if(slides[si].blocks[bi].stats.length<4){slides[si].blocks[bi].stats.push({val:'',label:''});renderBlocks(si);}}
+function addCmpColR(si,bi){if(!slides[si].blocks[bi].cols)slides[si].blocks[bi].cols=[];slides[si].blocks[bi].cols.push({title:'Nova coluna',icon:'·',color:'',items:[]});renderBlocks(si);}
+function removeCmpColR(si,bi,ci){slides[si].blocks[bi].cols.splice(ci,1);renderBlocks(si);}
+function moveCmpColR(si,bi,ci,d){const a=slides[si].blocks[bi].cols,ni=ci+d;if(ni<0||ni>=a.length)return;[a[ci],a[ni]]=[a[ni],a[ci]];renderBlocks(si);}
+function addTableRowR(si,bi){const b=slides[si].blocks[bi];const n=(b.headers||[]).length||2;if(!b.rows)b.rows=[];b.rows.push(Array(n).fill(''));renderBlocks(si);}
+function removeTableRowR(si,bi,ri){slides[si].blocks[bi].rows.splice(ri,1);renderBlocks(si);}
+function resizeTableColsR(si,bi,n){n=Math.max(1,Math.min(5,n));const b=slides[si].blocks[bi];const oldN=(b.headers||[]).length;if(n>oldN){for(let i=oldN;i<n;i++){b.headers.push('Col '+(i+1));(b.rows||[]).forEach(r=>r.push(''));}}else{b.headers=b.headers.slice(0,n);(b.rows||[]).forEach(r=>r.splice(n));}renderBlocks(si);}
 
 // ── FREE-TRANSFORM IMAGE SYSTEM (REEL) ───────────────────────────────────
 function getImgObjReel(si,bi,ii){
@@ -1140,7 +1167,7 @@ function applyMCDragReel(cx,cy){
 }
 function stopMCDragReel(){_mcR=null;document.removeEventListener('mousemove',onMCDragReel);document.removeEventListener('mouseup',stopMCDragReel);document.removeEventListener('touchmove',onMCDragTouchReel);document.removeEventListener('touchend',stopMCDragReel);}
 
-function addBlock(si,type){const def={text:{content:''},list:{content:[]},steps:{content:[]},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},compare:{leftTitle:'✅ Bom',rightTitle:'❌ Ruim',leftItems:[],rightItems:[]},image:{images:[]},code:{lang:'python',content:''},divider:{divLabel:''},timeline:{orient:'vertical',align:'left',stretch:true,spacing:18,items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
+function addBlock(si,type){const def={text:{content:''},list:{content:[],cols:1},steps:{content:[],cols:1},highlight:{content:''},quote:{quoteText:'',quoteAuthor:''},tip:{tipIcon:'💡',tipLabel:'DICA',tipText:''},stat:{stats:[{val:'',label:''},{val:'',label:''}]},compare:{cols:[{title:'✅ Bom',icon:'✓',color:'',items:[]}]},image:{images:[]},code:{lang:'python',content:''},divider:{divLabel:''},timeline:{orient:'vertical',align:'left',stretch:true,spacing:18,items:[{date:'',title:'',desc:'',color:''},{date:'',title:'',desc:'',color:''}]},table:{headers:['Coluna 1','Coluna 2'],rows:[['',''],['','']]}};slides[si].blocks.push({type,...def[type]});renderBlocks(si);}
 function removeBlock(si,bi){slides[si].blocks.splice(bi,1);renderBlocks(si);}
 function moveBlock(si,bi,d){const a=slides[si].blocks,ni=bi+d;if(ni<0||ni>=a.length)return;[a[bi],a[ni]]=[a[ni],a[bi]];renderBlocks(si);}
 function addTLItem(si,bi){if(!slides[si].blocks[bi].items)slides[si].blocks[bi].items=[];slides[si].blocks[bi].items.push({date:'',title:'',desc:'',color:''});renderBlocks(si);}
@@ -1203,16 +1230,22 @@ function highlight(code, lang) {
   if (lang === 'java') {
     const KW = /\b(public|private|protected|static|final|void|class|interface|enum|extends|implements|new|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|finally|throw|throws|import|package|this|super|null|true|false|abstract|synchronized|volatile|transient|native|instanceof)\b/g;
     const TY = /\b(int|long|short|byte|float|double|boolean|char|String|Integer|Long|Float|Double|Boolean|Character|Object|List|ArrayList|Map|HashMap|Set|HashSet|Optional|var)\b/g;
+    // Annotations tokenized in the SAME tok() call as strings/comments to avoid placeholder collision
     const [r1, tk] = tok(c,
       /\/\/[^\n]*/g,
       /\/\*[\s\S]*?\*\//g,
       /"(?:[^"\\]|\\.)*"/g,
       /'(?:[^'\\]|\\.)*'/g,
-      /\b\d+\.?\d*[LlFfDd]?\b/g
+      /\b\d+\.?\d*[LlFfDd]?\b/g,
+      /@[A-Za-z]\w*/g
     );
-    const tf = tk.map(m => /^\d/.test(m) ? cls_num(m) : (m.startsWith('//') || m.startsWith('/*')) ? cls_comment(m) : cls_str(m));
+    const tf = tk.map(m => {
+      if (/^\d/.test(m))                            return cls_num(m);
+      if (m.startsWith('//') || m.startsWith('/*')) return cls_comment(m);
+      if (m.startsWith('@'))                        return w('at', m);
+      return cls_str(m);
+    });
     return rst(r1
-      .replace(/@\w+/g,m=>w('at',m))
       .replace(KW,m=>w('k',m))
       .replace(TY,m=>w('t',m))
       .replace(/\b([A-Z][a-zA-Z0-9_]*)\s*(?=\()/g,m=>w('f',m))
@@ -1478,6 +1511,7 @@ function xh(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 function esc(t){return String(t||'').replace(/"/g,'&quot;');}
 function escTA(t){if(Array.isArray(t))t=t.join('\n');return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function applyHL(title,hl,color){const safe=xh(title);if(!hl||!hl.trim())return safe;const re=new RegExp(`(${xh(hl.trim()).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'i');return safe.replace(re,`<em style="color:${color};font-style:normal">$1</em>`);}
+function inlineHL(text,themeColor){return xh(text).replace(/==([^=|]+?)(?:\|([^=]+?))?==/g,(_,word,clr)=>{const c=clr?clr.trim():themeColor;return `<span style="background:${c}22;color:${c};border-radius:3px;padding:1px 4px">${word}</span>`;});}
 
 function wd(){const d=document.createElement('div');d.className='reel-wrap';return d;}
 
@@ -1616,10 +1650,10 @@ function makeContentReel(s,categoria,cur,total,p){
 function renderBlock(b,p,bf){
   const dark=isDark(p); const sc=p.tSub;
   if(b.type==='image') return ''; // images render in img-layer
-  if(b.type==='text') return `<p style="color:${sc}">${xh(b.content)}</p>`;
-  if(b.type==='list'){const items=(Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim()).map(l=>`<li><span class="li-dot" style="color:${p.c1}">▹</span><span style="color:${sc}">${xh(l)}</span></li>`).join('');return `<ul>${items}</ul>`;}
-  if(b.type==='steps'){const items=(Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim());return `<div class="steps-wrap">${items.map((l,i)=>`<div class="step-row"><div class="step-num" style="background:${ha(p.c1,.15)};color:${p.c1};border:1px solid ${ha(p.c1,.3)}">${i+1}</div><div class="step-text" style="color:${sc}">${xh(l)}</div></div>`).join('')}</div>`;}
-  if(b.type==='highlight') return `<div class="hl-card" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c2};color:${p.tMain}">${xh(b.content)}</div>`;
+  if(b.type==='text') return `<p style="color:${sc}">${inlineHL(b.content||'',p.c1)}</p>`;
+  if(b.type==='list'){const items=(Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim()).map(l=>`<li><span class="li-dot" style="color:${p.c1}">▹</span><span style="color:${sc}">${xh(l)}</span></li>`);const cols=Math.max(1,Math.min(3,b.cols||1));const grid=cols>1?`display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px 8px;`:'';return `<ul style="${grid}">${items.join('')}</ul>`;}
+  if(b.type==='steps'){const items=(Array.isArray(b.content)?b.content:(b.content||'').split('\n')).filter(l=>l.trim());const scols=Math.max(1,Math.min(3,b.cols||1));const grid=scols>1?`display:grid;grid-template-columns:repeat(${scols},1fr);gap:3px 6px;`:'';return `<div class="steps-wrap" style="${grid}">${items.map((l,i)=>`<div class="step-row"><div class="step-num" style="background:${ha(p.c1,.15)};color:${p.c1};border:1px solid ${ha(p.c1,.3)}">${i+1}</div><div class="step-text" style="color:${sc}">${xh(l)}</div></div>`).join('')}</div>`;}
+  if(b.type==='highlight') return `<div class="hl-card" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c2};color:${p.tMain}">${inlineHL(b.content||'',p.c1)}</div>`;
   if(b.type==='quote') return `<div class="quote-block" style="background:${dark?'rgba(0,0,0,.28)':'rgba(0,0,0,.04)'};border-color:${p.bdr};border-left-color:${p.c1}"><div class="quote-mark" style="color:${p.c1}">❝</div><div class="quote-text" style="color:${p.tMain}">${xh(b.quoteText||'')}</div>${b.quoteAuthor?`<div class="quote-author" style="color:${p.c2}">— ${xh(b.quoteAuthor)}</div>`:''}</div>`;
   if(b.type==='tip') return `<div class="tip-block" style="background:${ha(p.c1,dark?.07:.06)};border-color:${ha(p.c1,.2)}"><div class="tip-icon">${b.tipIcon||'💡'}</div><div><div class="tip-label" style="color:${p.c1}">${xh(b.tipLabel||'DICA')}</div><div class="tip-text" style="color:${p.tMain}">${xh(b.tipText||'')}</div></div></div>`;
   if(b.type==='stat'){
@@ -1627,12 +1661,20 @@ function renderBlock(b,p,bf){
     return `<div class="stat-grid">${stats.map(s=>{const clr=(s.color&&s.color.trim())?s.color.trim():p.c1;return `<div class="stat-card" style="background:${ha(clr,dark?.08:.06)};border-color:${ha(clr,.2)}"><div class="stat-val" style="color:${clr}">${xh(s.val)}</div><div class="stat-label" style="color:${sc}">${xh(s.label)}</div></div>`;}).join('')}</div>`;
   }
   if(b.type==='compare'){
-    const lClr=(b.leftColor&&b.leftColor.trim())?b.leftColor.trim():p.c1;
-    const rClr=(b.rightColor&&b.rightColor.trim())?b.rightColor.trim():'#f87171';
-    const lIco=b.leftIcon||'✓'; const rIco=b.rightIcon||'✕';
-    const lItems=(Array.isArray(b.leftItems)?b.leftItems:(b.leftItems||'').split('\n')).filter(l=>l.trim()).map(l=>`<div class="compare-item"><span style="color:${lClr};font-size:9px">${xh(lIco)}</span><span style="color:${p.tMain}">${xh(l)}</span></div>`).join('');
-    const rItems=(Array.isArray(b.rightItems)?b.rightItems:(b.rightItems||'').split('\n')).filter(l=>l.trim()).map(l=>`<div class="compare-item"><span style="color:${rClr};font-size:9px">${xh(rIco)}</span><span style="color:${sc}">${xh(l)}</span></div>`).join('');
-    return `<div class="compare-wrap"><div class="compare-row"><div class="compare-col" style="background:${ha(lClr,dark?.07:.05)};border-color:${ha(lClr,.2)}"><div class="compare-head" style="color:${lClr}">${xh(b.leftTitle||'✅ Bom')}</div><div class="compare-items">${lItems}</div></div><div class="compare-col" style="background:${ha(rClr,dark?.07:.06)};border-color:${ha(rClr,.2)}"><div class="compare-head" style="color:${rClr}">${xh(b.rightTitle||'❌ Ruim')}</div><div class="compare-items">${rItems}</div></div></div></div>`;
+    let cols=b.cols;
+    if(!cols||!Array.isArray(cols)){cols=[{title:b.leftTitle||'✅ Bom',icon:b.leftIcon||'✓',color:b.leftColor||'',items:b.leftItems||[]},{title:b.rightTitle||'❌ Ruim',icon:b.rightIcon||'✕',color:b.rightColor||'',items:b.rightItems||[]}];}
+    const colsHtml=cols.map(col=>{const clr=(col.color&&col.color.trim())?col.color.trim():p.c1;const ico=col.icon||'·';const items=(Array.isArray(col.items)?col.items:(col.items||'').split('\n')).filter(l=>l.trim()).map(l=>`<div class="compare-item"><span style="color:${clr};font-size:9px">${xh(ico)}</span><span style="color:${p.tMain}">${xh(l)}</span></div>`).join('');return `<div class="compare-col" style="background:${ha(clr,dark?.07:.05)};border-color:${ha(clr,.2)}"><div class="compare-head" style="color:${clr}">${xh(col.title||'')}</div><div class="compare-items">${items}</div></div>`;}).join('');
+    return `<div class="compare-wrap"><div class="compare-row">${colsHtml}</div></div>`;
+  }
+  if(b.type==='table'){
+    const headers=b.headers||[]; const rows=b.rows||[];
+    if(!headers.length) return '';
+    const thBg=dark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+    const tdBg=dark?'rgba(255,255,255,.02)':'rgba(0,0,0,.02)';
+    const borderClr=ha(p.c1,.25);
+    const thCells=headers.map(h=>`<th style="padding:5px 8px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${p.c1};background:${ha(p.c1,dark?.12:.08)};border:1px solid ${borderClr};white-space:nowrap">${xh(h)}</th>`).join('');
+    const bodyRows=rows.map((row,ri)=>{const cells=headers.map((_,ci)=>`<td style="padding:4px 8px;font-size:10.5px;color:${p.tSub};border:1px solid ${ha(p.c1,.1)};background:${ri%2===0?tdBg:'transparent'}">${xh(row[ci]||'')}</td>`).join('');return `<tr>${cells}</tr>`;}).join('');
+    return `<div style="overflow:hidden;border-radius:7px;border:1px solid ${borderClr}"><table style="width:100%;border-collapse:collapse;font-family:inherit"><thead><tr>${thCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
   }
   if(b.type==='divider'){
     const lineClr=ha(p.c1,.3);

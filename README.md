@@ -159,16 +159,17 @@ Slide 2+  →  Conteúdo   (ilimitados, reordenáveis)
 
 | Bloco | Descrição |
 |---|---|
-| ✏️ Texto | Parágrafo simples |
-| 📋 Lista | Lista com marcadores triangulares |
-| 🔢 Passos | Lista numerada automática |
-| 📊 Estatísticas | Cards com valor + descrição (até 4) |
+| ✏️ Texto | Parágrafo simples. Suporta destaque inline com `==palavra==` |
+| 📋 Lista | Lista com marcadores triangulares. Colunas configuráveis (1–4) |
+| 🔢 Passos | Lista numerada automática. Colunas configuráveis (1–4) |
+| 📊 Estatísticas | Cards com valor + descrição (até 4). Layout responsivo com wrap |
 | 💬 Citação | Bloco com aspas, texto e autor |
-| 💡 Destaque | Card com borda lateral colorida |
+| 💡 Destaque | Card com borda lateral colorida. Suporta destaque inline com `==palavra==` |
 | ⚠️ Dica / Aviso | Com ícone e label personalizáveis |
-| ⚖️ Comparar | Duas colunas lado a lado |
+| ⚖️ Comparar | N colunas lado a lado (expansível), layout wrap centralizado |
 | 🖼️ Imagem | 1 a 4 imagens, 5 arranjos, 4 formatos |
 | 💻 Código | Syntax highlighting — 23 linguagens |
+| 🗂️ Tabela | Tabela com N colunas e linhas dinâmicas, estilizada com as cores do tema |
 | ─ Divisor | Separador decorativo |
 
 ---
@@ -209,14 +210,29 @@ Tela 2+  →  Conteúdo     (ilimitadas, reordenáveis)
 
 | Bloco | Descrição |
 |---|---|
-| ✏️ Texto | Parágrafo simples |
-| 📋 Lista | Lista com marcadores |
-| 🔢 Passos | Lista numerada automática |
-| 📊 Stats | Cards de estatísticas (até 4) |
+| ✏️ Texto | Parágrafo simples. Suporta destaque inline com `==palavra==` |
+| 📋 Lista | Lista com marcadores. Colunas configuráveis (1–3) |
+| 🔢 Passos | Lista numerada automática. Colunas configuráveis (1–3) |
+| 📊 Stats | Cards de estatísticas (até 4). Layout responsivo com wrap automático |
 | 💬 Citação | Bloco com aspas e autor |
-| 💡 Destaque | Card com borda lateral colorida |
+| 💡 Destaque | Card com borda lateral colorida. Suporta destaque inline com `==palavra==` |
 | ⚠️ Dica | Com ícone e label personalizáveis |
+| ⚖️ Comparar | N colunas expansíveis, layout wrap centralizado |
 | 💻 Código | Syntax highlighting — 15 linguagens |
+| 🗂️ Tabela | Tabela com N colunas e linhas dinâmicas, estilizada com as cores do tema |
+
+---
+
+## Destaque inline de palavras
+
+Disponível nos blocos **Texto** e **Destaque** em ambos os templates.
+
+| Sintaxe | Resultado |
+|---|---|
+| `==palavra==` | Destaca com a cor principal do tema ativo |
+| `==palavra\|#ffcc00==` | Destaca com a cor personalizada informada |
+
+O destaque renderiza como um span com fundo semitransparente e texto colorido, integrado ao fluxo do parágrafo.
 
 ---
 
@@ -240,6 +256,8 @@ Os dois templates usam exatamente as mesmas configurações visuais, garantindo 
 
 Python · Java · Kotlin · JavaScript · TypeScript · C# · C/C++ · Go · Rust · PHP · Ruby · Swift · SQL · HTML · CSS · Terminal/Shell · YAML · JSON · XML · Dockerfile · Nginx · Gradle · Texto puro
 
+> **Fix Java:** anotações como `@Override`, `@Autowired`, `@Entity` são agora corretamente coloridas sem quebrar o HTML do syntax highlighting.
+
 ### Ícone do handle — 4 modos
 
 | Modo | Descrição |
@@ -253,7 +271,9 @@ Python · Java · Kotlin · JavaScript · TypeScript · C# · C/C++ · Go · Rus
 
 ## Como exportar
 
-**Screenshot (recomendado):** Use uma extensão de browser como **GoFullPage**, **Fireshot** ou **Awesome Screenshot** para capturar cada slide individualmente.
+**PNG direto (recomendado):** Clique em **⬇ Baixar todos os slides (PNG)**. Se o navegador suportar a File System Access API (Chrome 86+), será solicitada uma pasta de destino e todos os slides serão salvos automaticamente. Caso contrário, os downloads ocorrem um a um.
+
+**Screenshot manual:** Use uma extensão de browser como **GoFullPage**, **Fireshot** ou **Awesome Screenshot** para capturar cada slide individualmente.
 
 **Como PDF:**
 
@@ -288,6 +308,20 @@ Cada arquivo é autossuficiente — não há dependências locais, pastas de ass
 | Node.js / npm | ❌ Não necessário |
 | Servidor web | ❌ Não necessário |
 | Instalação | ❌ Nenhuma |
+
+---
+
+## Changelog
+
+### v2 — melhorias nos blocos de conteúdo
+
+- **Texto / Destaque** — destaque inline de palavras com `==palavra==` ou `==palavra|#cor==`
+- **Lista** — configuração de colunas (1–4 no post, 1–3 no reel)
+- **Passos** — configuração de colunas (1–4 no post, 1–3 no reel)
+- **Estatísticas** — layout responsivo com `flex-wrap`; no reel estreito os cards quebram automaticamente para linha de baixo
+- **Comparar** — expandido de 2 colunas fixas para N colunas dinâmicas; cada coluna tem título, ícone e cor independentes; layout wrap centralizado funciona em qualquer largura
+- **Tabela** — novo bloco com cabeçalhos editáveis, N colunas (1–6), linhas add/remove dinâmicas, estilizado com as cores do tema ativo
+- **Código Java** — corrigido bug onde `@Override` e outras anotações quebravam o HTML do syntax highlighting
 
 ---
 
