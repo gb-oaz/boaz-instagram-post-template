@@ -1,6 +1,6 @@
-# 📱 instagram-content-templates
+# 📱 content-templates
 
-> Templates visuais para criação de **Posts** e **Reels** do Instagram — 100% offline, sem instalar nada, direto no navegador.
+> Templates visuais para criação de **Posts**, **Reels** e **Slides para YouTube** — 100% offline, sem instalar nada, direto no navegador.
 
 ---
 
@@ -16,7 +16,7 @@
 
 ## O que são estes templates?
 
-Dois arquivos HTML independentes que funcionam como estúdios de criação de conteúdo para o Instagram. Você abre no navegador, preenche os campos e o preview é gerado em tempo real — sem internet, sem conta, sem instalar nada.
+Três arquivos HTML independentes que funcionam como estúdios de criação de conteúdo para Instagram e YouTube. Você abre no navegador, preenche os campos e o preview é gerado em tempo real — sem internet, sem conta, sem instalar nada.
 
 Criados para uso pessoal como **Analista de Sistemas e Engenheiro da Computação**, com suporte completo a conteúdo técnico: blocos de código com syntax highlighting, listas, passos numerados, estatísticas, citações e muito mais.
 
@@ -28,8 +28,9 @@ Criados para uso pessoal como **Analista de Sistemas e Engenheiro da Computaçã
 |---|---|---|
 | `instagram_template_gustavoboazms.html` | 600×600px (1:1) | Posts do feed do Instagram |
 | `instagram_reel_template_gustavoboazms.html` | 338×600px (9:16) | Reels e Stories do Instagram |
+| `youtube_slides_template_gustavoboazms.html` | 1280×720px (16:9) | Slides de apresentação para YouTube |
 
-Os dois templates compartilham o mesmo sistema de design: **36 paletas de cores**, **20 combinações tipográficas** e o mesmo sistema de ícones — garantindo identidade visual consistente entre post e reel.
+Os três templates compartilham o mesmo sistema de design: **paletas de cores**, **combinações tipográficas** e sistema de ícones — garantindo identidade visual consistente entre todos os formatos.
 
 ---
 
@@ -54,6 +55,10 @@ curl -fsSL https://raw.githubusercontent.com/gustavoboazms/instagram-content-tem
 # Reel (vertical 9:16)
 curl -fsSL https://raw.githubusercontent.com/gustavoboazms/instagram-content-templates/main/instagram_reel_template_gustavoboazms.html \
      -o instagram_reel_template_gustavoboazms.html
+
+# YouTube Slides (horizontal 16:9)
+curl -fsSL https://raw.githubusercontent.com/gustavoboazms/instagram-content-templates/main/youtube_slides_template_gustavoboazms.html \
+     -o youtube_slides_template_gustavoboazms.html
 ```
 
 ### 2. Abrir no navegador
@@ -64,30 +69,33 @@ Dê dois cliques no arquivo ou execute no terminal:
 # macOS
 open instagram_template_gustavoboazms.html
 open instagram_reel_template_gustavoboazms.html
+open youtube_slides_template_gustavoboazms.html
 
 # Linux
 xdg-open instagram_template_gustavoboazms.html
 xdg-open instagram_reel_template_gustavoboazms.html
+xdg-open youtube_slides_template_gustavoboazms.html
 
 # Windows (PowerShell)
 Start-Process instagram_template_gustavoboazms.html
 Start-Process instagram_reel_template_gustavoboazms.html
+Start-Process youtube_slides_template_gustavoboazms.html
 ```
 
 > A primeira abertura requer conexão com a internet para carregar as fontes via Google Fonts CDN. Nas aberturas seguintes o navegador usa o cache local.
 
 ### 3. Carregar o exemplo
 
-Clique em **↺ Exemplo** para preencher automaticamente todos os campos com um post de demonstração sobre Clean Code em Java. É a forma mais rápida de entender como cada bloco funciona antes de criar seu próprio conteúdo.
+Clique em **↺ Exemplo** para preencher automaticamente todos os campos com um conteúdo de demonstração sobre Clean Code em Java. É a forma mais rápida de entender como cada bloco funciona antes de criar seu próprio conteúdo.
 
 ---
 
 ## Interface — como funciona
 
-Os dois templates têm a mesma estrutura de interface:
+Os três templates têm a mesma estrutura de interface:
 
 ```
-[ ▶ Gerar ]  [ ↺ Exemplo ]        ← barra de ação, sempre visível no topo
+[ ▶ Gerar ]  [ ↺ Exemplo ]  [ ⬇ Baixar ]   ← barra de ação, sempre visível no topo
 
 ┌──────────────────────────────┐
 │ ⚙  Configurações Globais    │  ← paleta, fonte, ícone, header/footer
@@ -100,7 +108,11 @@ Os dois templates têm a mesma estrutura de interface:
 └──────────────────────────────┘
 ```
 
-Clique em cada seção para expandir — apenas uma fica aberta por vez. Ao editar qualquer campo, o preview atualiza em tempo real.
+Clique em cada seção para expandir — apenas uma fica aberta por vez. Ao editar qualquer campo, o preview atualiza em tempo real. Ao abrir uma seção, o editor faz scroll automático para ela.
+
+### Blocos de conteúdo
+
+Dentro de cada slide de conteúdo você pode adicionar e reordenar blocos livremente. Ao clicar no cabeçalho de um slide para abri-lo, os blocos são renderizados imediatamente no editor.
 
 ### Modo de visualização
 
@@ -111,7 +123,7 @@ No canto inferior direito há um botão de toggle de layout:
 | ⬇️ Vertical | Editor acima, preview abaixo (padrão) |
 | ➡️ Lado a lado | Editor à esquerda, preview à direita — ideal para editar e ver ao mesmo tempo |
 
-No modo lado a lado, ao abrir a seção de Abertura/Capa o preview rola automaticamente para a primeira tela. O mesmo acontece com o Fechamento/Encerramento e com cada slide de conteúdo individualmente.
+No modo lado a lado, ao abrir qualquer seção ou clicar em um slide de conteúdo, o preview rola automaticamente para o slide correspondente. O editor também faz scroll para manter o item clicado visível.
 
 ---
 
@@ -167,7 +179,7 @@ Slide 2+  →  Conteúdo   (ilimitados, reordenáveis)
 | 💡 Destaque | Card com borda lateral colorida. Suporta destaque inline com `==palavra==` |
 | ⚠️ Dica / Aviso | Com ícone e label personalizáveis |
 | ⚖️ Comparar | N colunas lado a lado (expansível), layout wrap centralizado |
-| 🖼️ Imagem | 1 a 4 imagens, 5 arranjos, 4 formatos |
+| 🖼️ Imagem | Posicionamento livre no slide com mini-canvas de drag, resize e rotação |
 | 💻 Código | Syntax highlighting — 23 linguagens |
 | 🗂️ Tabela | Tabela com N colunas e linhas dinâmicas, estilizada com as cores do tema |
 | ─ Divisor | Separador decorativo |
@@ -223,9 +235,84 @@ Tela 2+  →  Conteúdo     (ilimitadas, reordenáveis)
 
 ---
 
+## Template de YouTube — 16:9 · 1280×720px
+
+Formato horizontal para slides de apresentação de vídeos do YouTube. Ideal para criar sequências de imagens que ilustram o conteúdo do vídeo — capa, slides de desenvolvimento e encerramento.
+
+O preview é escalado proporcionalmente para caber na tela, mas o download sempre gera os arquivos em resolução completa de 1280×720px.
+
+### Estrutura de slides
+
+```
+Slide 1   →  Capa          (10 layouts)
+Slide 2+  →  Conteúdo     (ilimitados, reordenáveis)
+Último    →  Encerramento  (7 layouts)
+```
+
+### Layouts de capa
+
+| Layout | Característica |
+|---|---|
+| Clássico | Linha lateral colorida + título grande à esquerda |
+| Centrado | Tudo centralizado com glow radial |
+| Dividido | Faixa horizontal de cor separa badge e título |
+| Big Type | Primeira palavra gigante como fundo decorativo |
+| Terminal | Estilo CLI dark com barra de título e linhas de comando |
+| Card | Título dentro de card com blur e borda colorida |
+| Diagonal | Polígono diagonal de cor preenche o lado esquerdo |
+| Minimal | Só tipografia — traço, título, categoria |
+| Badge | Ícone grande em círculo à esquerda + título |
+| Impact | Título em uppercase gigante sobre gradiente dramático |
+
+### Layouts de encerramento
+
+| Layout | Característica |
+|---|---|
+| Clássico | Avatar centralizado + handle + mensagem + CTAs |
+| Minimal | Só tipografia, sem avatar, alinhado à esquerda |
+| Spotlight | Glow radial intenso atrás do avatar |
+| Split | Avatar à esquerda, mensagem e CTAs à direita |
+| Card | Tudo dentro de um card frosted glass centralizado |
+| Full BG | Gradiente de cor preenche toda a área do slide |
+| Banner | Faixa de gradiente no topo com avatar emergindo |
+
+### Blocos de conteúdo
+
+| Bloco | Descrição |
+|---|---|
+| ✏️ Texto | Parágrafo simples. Suporta destaque inline com `==palavra==` |
+| 📋 Lista | Lista com marcadores. Colunas configuráveis (1–3) |
+| 🔢 Passos | Lista numerada automática. Colunas configuráveis (1–3) |
+| 📊 Estatísticas | Cards com valor + descrição (até 4). Layout responsivo |
+| 💬 Citação | Bloco com aspas, texto e autor |
+| 💡 Destaque | Card com borda lateral colorida. Suporta destaque inline com `==palavra==` |
+| ⚠️ Dica | Com ícone e label personalizáveis |
+| ⚖️ Comparar | N colunas expansíveis, layout wrap centralizado |
+| 💻 Código | Syntax highlighting — 21 linguagens |
+| 🗂️ Tabela | Tabela com N colunas e linhas dinâmicas, estilizada com as cores do tema |
+| 🖼️ Imagem | Posicionamento livre no slide com mini-canvas de drag, resize e rotação |
+| ─ Divisor | Separador decorativo com label opcional |
+
+### Configurações específicas do YouTube
+
+**Campos da capa:**
+- Categoria / Badge e Número / Parte (ex: `#01`, `Parte 2`)
+- Título principal e subtítulo
+- Palavra de destaque no título — colorida automaticamente com a cor da paleta
+
+**Encerramento:**
+- Handle do canal e subtítulo / ocupação
+- Mensagem de encerramento
+- Avatar: ícone emoji, foto carregada ou nenhum
+- CTAs configuráveis (emoji + label, quantidade ilimitada)
+
+**Modo lado a lado:** ao clicar em um slide de conteúdo para editar, o preview rola automaticamente para deixar aquele slide visível e centralizado na tela.
+
+---
+
 ## Destaque inline de palavras
 
-Disponível nos blocos **Texto** e **Destaque** em ambos os templates.
+Disponível nos blocos **Texto** e **Destaque** em todos os templates.
 
 | Sintaxe | Resultado |
 |---|---|
@@ -238,15 +325,15 @@ O destaque renderiza como um span com fundo semitransparente e texto colorido, i
 
 ## Sistema de design compartilhado
 
-Os dois templates usam exatamente as mesmas configurações visuais, garantindo identidade consistente entre post e reel.
+Os três templates usam as mesmas configurações visuais base, garantindo identidade consistente entre todos os formatos.
 
-### Paletas de cores — 36 no total
+### Paletas de cores
 
-**Dark (16 paletas):** Neon · Fire · Violeta · Gold · Ice · Rose · Esmeralda · Cyber · Aurora · Ferrugem · Matrix · Oceano · Sakura · Midnight · Mono · Slate
+**Dark:** Neon · Fire · Violeta · Gold · Ice · Rose · Esmeralda · Cyber · Aurora · Ferrugem · Matrix · Oceano · Midnight · Mono · Slate · **YouTube** (exclusiva do template YT)
 
-**Light (20 paletas):** Clean · Paper · Sky · Mint · Rosa · Âmbar · Lavanda · Cinza · Pêssego · Teal · Creme · Blush · Sage · Ártico · Coral · Dusk · Nórdico · Orquídea · Pedra · Aqua
+**Light:** Clean · Paper · Sky · Mint · Rosa · Âmbar · Lavanda · Cinza · Pêssego · Teal · Creme · Blush · Sage · Ártico · Coral · Dusk · Nórdico · Orquídea · Pedra · Aqua
 
-### Tipografia — 20 combinações
+### Tipografia
 
 **Sans-serif:** Syne+DM Sans · Inter · Poppins · Outfit · Montserrat · Raleway · Nunito · Josefin Sans · Space Grotesk · Plus Jakarta Sans · Playfair Display · Urbanist · Bebas Neue · Exo 2 · Chakra Petch · Oxanium · Orbitron
 
@@ -256,9 +343,9 @@ Os dois templates usam exatamente as mesmas configurações visuais, garantindo 
 
 Python · Java · Kotlin · JavaScript · TypeScript · C# · C/C++ · Go · Rust · PHP · Ruby · Swift · SQL · HTML · CSS · Terminal/Shell · YAML · JSON · XML · Dockerfile · Nginx · Gradle · Texto puro
 
-> **Fix Java:** anotações como `@Override`, `@Autowired`, `@Entity` são agora corretamente coloridas sem quebrar o HTML do syntax highlighting.
+> **Fix Java:** anotações como `@Override`, `@Autowired`, `@Entity` são corretamente coloridas sem quebrar o HTML do syntax highlighting.
 
-### Ícone do handle — 4 modos
+### Ícone do handle — modos disponíveis
 
 | Modo | Descrição |
 |---|---|
@@ -271,7 +358,7 @@ Python · Java · Kotlin · JavaScript · TypeScript · C# · C/C++ · Go · Rus
 
 ## Como exportar
 
-**PNG direto (recomendado):** Clique em **⬇ Baixar todos os slides (PNG)**. Se o navegador suportar a File System Access API (Chrome 86+), será solicitada uma pasta de destino e todos os slides serão salvos automaticamente. Caso contrário, os downloads ocorrem um a um.
+**PNG direto (recomendado):** Clique em **⬇ Baixar todos os slides (PNG)**. Todos os slides são gerados em resolução real e baixados sequencialmente.
 
 **Screenshot manual:** Use uma extensão de browser como **GoFullPage**, **Fireshot** ou **Awesome Screenshot** para capturar cada slide individualmente.
 
@@ -290,8 +377,9 @@ Ctrl + P  (ou Cmd + P no Mac)
 
 ```
 instagram-content-templates/
-├── instagram_template_gustavoboazms.html       # Post 1:1 — 600×600px
-├── instagram_reel_template_gustavoboazms.html  # Reel 9:16 — 338×600px
+├── instagram_template_gustavoboazms.html        # Post 1:1 — 600×600px
+├── instagram_reel_template_gustavoboazms.html   # Reel 9:16 — 338×600px
+├── youtube_slides_template_gustavoboazms.html   # YouTube 16:9 — 1280×720px
 └── README.md
 ```
 
@@ -312,6 +400,15 @@ Cada arquivo é autossuficiente — não há dependências locais, pastas de ass
 ---
 
 ## Changelog
+
+### v3 — template YouTube + correções de UX
+
+- **Novo template YouTube** — slides 16:9 (1280×720px) com capa, slides de conteúdo e encerramento; 10 layouts de capa, 7 de encerramento, todos os blocos de conteúdo do Instagram adaptados para o formato horizontal
+- **Preview escalado proporcional** — os slides no preview são redimensionados para caber na área disponível mantendo a proporção correta; no YouTube o wrapper reserva a altura exata escalada, sem desalinhamentos
+- **Scroll automático no modo lado a lado** — ao clicar em um slide de conteúdo para editar, o preview rola para deixar aquele slide visível e centralizado; funciona nos três templates
+- **Blocos aparecem ao abrir slide** — corrigido bug onde clicar no cabeçalho de um slide abria o container mas deixava a lista de blocos vazia; agora `renderBlocks` é sempre chamado ao expandir
+- **Scroll do accordion no YouTube** — corrigido `overflow:hidden` no accordion que impedia o scroll no modo horizontal
+- **Paleta YouTube** — nova paleta dark com vermelho e laranja exclusiva do template YouTube
 
 ### v2 — melhorias nos blocos de conteúdo
 

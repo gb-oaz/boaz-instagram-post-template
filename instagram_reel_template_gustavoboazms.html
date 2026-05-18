@@ -867,6 +867,10 @@ function toggleSlide(i){
     const sih=document.getElementById('slide-sih-'+i);
     if(sib) sib.style.display='flex';
     if(sih) sih.classList.add('open');
+    // Always render blocks when opening
+    renderBlocks(i);
+    // Scroll into view
+    requestAnimationFrame(()=>sih&&sih.scrollIntoView({behavior:'smooth',block:'nearest'}));
     if(currentLayout==='horizontal') requestAnimationFrame(()=>scrollPreviewToSlideNum(i+2));
   } else openSlideIndex=-1;
 }
