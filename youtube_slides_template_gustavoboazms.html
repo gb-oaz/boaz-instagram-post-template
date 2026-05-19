@@ -280,6 +280,74 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
 
 /* CTA wrapper in closing slide */
 .close-cta{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+
+/* ══ TRANSCRIÇÃO — TICKER ══ */
+.slide-transcript{
+  position:relative;z-index:3;
+  height:36px;flex-shrink:0;
+  display:flex;align-items:center;
+  overflow:hidden;
+  border-top-width:1px;border-top-style:solid;
+}
+.transcript-label{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:5px;
+  padding:0 12px 0 16px;
+  font-family:'Space Mono',monospace;
+  font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.1em;
+  height:100%;
+  border-right-width:1px;border-right-style:solid;
+  white-space:nowrap;
+}
+.transcript-track{
+  flex:1;overflow:hidden;
+  position:relative;
+  height:100%;
+  display:flex;align-items:center;
+}
+.transcript-text{
+  white-space:nowrap;
+  position:absolute;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  animation: tickerScroll linear infinite;
+  /* animation-duration set inline */
+}
+@keyframes tickerScroll{
+  0%   { left: 100%; transform: translateX(0);   }
+  100% { left: 0;    transform: translateX(-100%); }
+}
+
+/* ══ TRANSCRIÇÃO — EDITOR UI ══ */
+.transcript-editor{
+  background:rgba(255,200,0,.04);
+  border:1px solid rgba(255,200,0,.12);
+  border-radius:8px;
+  padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+  margin-top:4px;
+}
+.transcript-toggle-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.transcript-badge{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;
+  background:rgba(255,200,0,.15);color:#facc15;
+  border-radius:100px;padding:2px 8px;
+}
+.transcript-badge.active-badge{background:rgba(34,197,94,.15);color:#4ade80;}
+.tr-dur-row{display:flex;align-items:center;gap:6px;}
+.tr-dur-row label{margin-bottom:0;white-space:nowrap;}
+.tr-dur-row input{width:80px!important;}
+.tr-preview-gif{
+  margin-top:6px;
+  background:rgba(255,255,255,.03);
+  border:1px dashed rgba(255,255,255,.1);
+  border-radius:6px;
+  padding:6px 10px;
+  font-size:11px;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+}
 </style>
 </head>
 <body>
@@ -295,7 +363,7 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
 <div class="action-bar">
   <button class="btn btn-primary" onclick="renderSlides()">▶ Gerar Slides</button>
   <button class="btn btn-ghost"   onclick="loadExample()">↺ Exemplo</button>
-  <button class="dl-btn"          onclick="downloadAll()">⬇ Baixar todos (PNG)</button>
+  <button class="dl-btn"          onclick="downloadAll()">⬇ Baixar todos (PNG/GIF)</button>
 </div>
 
 <div class="accordion">
@@ -375,6 +443,25 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
       </div>
       <div><label>Título Principal</label><input type="text" id="postTopic" value="Clean Code em Java" oninput="renderSlides()"></div>
       <div><label>Subtítulo</label><input type="text" id="postSubtitle" value="Escreva código limpo, legível e profissional" oninput="renderSlides()"></div>
+      <hr class="sep">
+      <div>
+        <div class="sec">🎙 Transcrição da Capa</div>
+        <div class="transcript-editor">
+          <div class="transcript-toggle-row">
+            <span class="transcript-badge" id="capa-tr-badge">Desativada</span>
+            <button class="wm-opt" id="capa-tr-on"  onclick="setTranscript('capa',true,this)">✅ Ativar</button>
+            <button class="wm-opt active" id="capa-tr-off" onclick="setTranscript('capa',false,this)">🚫 Off</button>
+          </div>
+          <div id="capa-tr-fields" style="display:none;flex-direction:column;gap:8px">
+            <div><label>Texto da transcrição</label><textarea id="capa-tr-text" rows="2" placeholder="Texto que rolará da direita para a esquerda no footer..." oninput="renderSlides()"></textarea></div>
+            <div class="tr-dur-row">
+              <label>Duração (segundos)</label>
+              <input type="number" id="capa-tr-dur" value="8" min="3" max="60" step="1" style="width:80px" oninput="renderSlides()">
+            </div>
+            <div class="tr-preview-gif">📽️ Export: este slide será salvo como <strong>GIF animado</strong> ao baixar todos</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -432,6 +519,25 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
         <label>CTAs de encerramento</label>
         <div id="ctaList" style="display:flex;flex-direction:column;gap:6px"></div>
         <button class="btn btn-ghost btn-sm" style="margin-top:5px;align-self:flex-start" onclick="addCta()">+ Adicionar CTA</button>
+      </div>
+      <hr class="sep">
+      <div>
+        <div class="sec">🎙 Transcrição do Encerramento</div>
+        <div class="transcript-editor">
+          <div class="transcript-toggle-row">
+            <span class="transcript-badge" id="close-tr-badge">Desativada</span>
+            <button class="wm-opt" id="close-tr-on"  onclick="setTranscript('close',true,this)">✅ Ativar</button>
+            <button class="wm-opt active" id="close-tr-off" onclick="setTranscript('close',false,this)">🚫 Off</button>
+          </div>
+          <div id="close-tr-fields" style="display:none;flex-direction:column;gap:8px">
+            <div><label>Texto da transcrição</label><textarea id="close-tr-text" rows="2" placeholder="Texto que rolará no footer do slide de encerramento..." oninput="renderSlides()"></textarea></div>
+            <div class="tr-dur-row">
+              <label>Duração (segundos)</label>
+              <input type="number" id="close-tr-dur" value="10" min="3" max="60" step="1" style="width:80px" oninput="renderSlides()">
+            </div>
+            <div class="tr-preview-gif">📽️ Export: este slide será salvo como <strong>GIF animado</strong> ao baixar todos</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -736,6 +842,292 @@ function renderCtaList(){
 
 /* ══ DATA MODEL ══ */
 let slides=[];
+
+/* ══ TRANSCRIÇÃO — ESTADO GLOBAL ══ */
+let capaTranscript   = {active:false, text:'', duration:8};
+let closeTranscript  = {active:false, text:'', duration:10};
+
+function setTranscript(type, active, el){
+  const isClose = type==='close';
+  const obj = isClose ? closeTranscript : capaTranscript;
+  obj.active = active;
+  // toggle buttons
+  const onId  = type+'-tr-on';
+  const offId = type+'-tr-off';
+  const badgeId = type+'-tr-badge';
+  document.getElementById(onId)?.classList.toggle('active', active);
+  document.getElementById(offId)?.classList.toggle('active', !active);
+  const badge = document.getElementById(badgeId);
+  if(badge){ badge.textContent = active ? 'Ativa' : 'Desativada'; badge.className='transcript-badge'+(active?' active-badge':''); }
+  const fieldsId = type+'-tr-fields';
+  const fields = document.getElementById(fieldsId);
+  if(fields) fields.style.display = active ? 'flex' : 'none';
+  renderSlides();
+}
+
+function setSlideTranscript(i, active, el){
+  if(!slides[i].transcript) slides[i].transcript = {active:false, text:'', duration:8};
+  slides[i].transcript.active = active;
+  const onBtn  = document.getElementById('slide-tr-on-'+i);
+  const offBtn = document.getElementById('slide-tr-off-'+i);
+  const badge  = document.getElementById('slide-tr-badge-'+i);
+  const fields = document.getElementById('slide-tr-fields-'+i);
+  onBtn?.classList.toggle('active', active);
+  offBtn?.classList.toggle('active', !active);
+  if(badge){ badge.textContent = active ? 'Ativa' : 'Desativada'; badge.className='transcript-badge'+(active?' active-badge':''); }
+  if(fields) fields.style.display = active ? 'flex' : 'none';
+  renderSlides();
+}
+
+/* ══ TRANSCRIÇÃO — RENDER HTML ══ */
+function makeTranscriptBar(trObj, p){
+  if(!trObj || !trObj.active || !trObj.text) return '';
+  const dark = isDark(p);
+  const dur  = Math.max(3, trObj.duration || 8);
+  const text = trObj.text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  const barBg = dark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
+  const labelBg = ha(p.c1, .18);
+  const textColor = dark ? 'rgba(240,240,245,.85)' : p.tMain;
+  return `<div class="slide-transcript" style="background:${barBg};border-top-color:${p.bdr};backdrop-filter:blur(8px)">
+    <div class="transcript-label" style="color:${p.c1};background:${labelBg};border-right-color:${p.bdr}">
+      <span>🎙</span><span>Narração</span>
+    </div>
+    <div class="transcript-track">
+      <div class="transcript-text" style="color:${textColor};animation-duration:${dur}s">${text}</div>
+    </div>
+  </div>`;
+}
+
+
+/* ══ PURE-JS GIF ENCODER (sem Worker, sem CORS) ══
+   LZW encoder + GIF89a writer — funciona em file:// e em qualquer origem.
+   Baseado no algoritmo público de omggif / jsgif, reescrito inline.
+*/
+const GifEncoder = (() => {
+  // ---------- LZW compressor ----------
+  function lzwEncode(pixels, colorDepth) {
+    const minCodeSize = Math.max(2, colorDepth);
+    const clearCode   = 1 << minCodeSize;
+    const eofCode     = clearCode + 1;
+    let codeSize      = minCodeSize + 1;
+    let maxCode       = clearCode + 2;
+    const table       = new Map();
+    const out         = [];
+    let   buf         = 0, bufBits = 0;
+    const bytes       = [];
+
+    function emit(code) {
+      buf |= code << bufBits;
+      bufBits += codeSize;
+      while (bufBits >= 8) { bytes.push(buf & 0xFF); buf >>= 8; bufBits -= 8; }
+    }
+    function flush() {
+      if (bufBits > 0) bytes.push(buf & 0xFF);
+    }
+
+    emit(clearCode);
+    let prefix = pixels[0];
+    for (let i = 1; i < pixels.length; i++) {
+      const px  = pixels[i];
+      const key = (prefix << 12) | px;
+      if (table.has(key)) {
+        prefix = table.get(key);
+      } else {
+        emit(prefix);
+        if (maxCode < 4096) {
+          table.set(key, maxCode++);
+          if (maxCode > (1 << codeSize) && codeSize < 12) codeSize++;
+        } else {
+          emit(clearCode);
+          table.clear();
+          codeSize  = minCodeSize + 1;
+          maxCode   = clearCode + 2;
+        }
+        prefix = px;
+      }
+    }
+    emit(prefix);
+    emit(eofCode);
+    flush();
+    return bytes;
+  }
+
+  // ---------- Median-cut quantizer (256 colors) ----------
+  function quantize(imageData, maxColors) {
+    const pixels = imageData;
+    // Build histogram
+    const hist = new Map();
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i] >> 3, g = pixels[i+1] >> 3, b = pixels[i+2] >> 3;
+      const k = (r << 10) | (g << 5) | b;
+      hist.set(k, (hist.get(k) || 0) + 1);
+    }
+    // Build palette: take up to maxColors most frequent colors
+    const sorted = [...hist.entries()].sort((a,b) => b[1]-a[1]).slice(0, maxColors);
+    const palette = sorted.map(([k]) => [
+      ((k >> 10) & 31) << 3,
+      ((k >>  5) & 31) << 3,
+      ( k        & 31) << 3
+    ]);
+    while (palette.length < maxColors) palette.push([0, 0, 0]);
+
+    // Build index image
+    // Build a fast lookup: key -> palette index
+    const lookup = new Map();
+    palette.forEach(([r,g,b], idx) => {
+      const k = ((r>>3)<<10)|((g>>3)<<5)|(b>>3);
+      if (!lookup.has(k)) lookup.set(k, idx);
+    });
+    function nearest(r,g,b) {
+      const k = ((r>>3)<<10)|((g>>3)<<5)|(b>>3);
+      if (lookup.has(k)) return lookup.get(k);
+      let best = 0, bestD = Infinity;
+      for (let i = 0; i < palette.length; i++) {
+        const dr=r-palette[i][0],dg=g-palette[i][1],db=b-palette[i][2];
+        const d=dr*dr+dg*dg+db*db;
+        if(d<bestD){bestD=d;best=i;}
+      }
+      lookup.set(k, best);
+      return best;
+    }
+    const indexed = new Uint8Array(pixels.length / 4);
+    for (let i = 0; i < pixels.length; i += 4) {
+      indexed[i>>2] = nearest(pixels[i], pixels[i+1], pixels[i+2]);
+    }
+    return { palette, indexed };
+  }
+
+  // ---------- GIF writer ----------
+  function writeUint16LE(arr, val) {
+    arr.push(val & 0xFF, (val >> 8) & 0xFF);
+  }
+
+  function encode(frames, width, height, delayMs) {
+    const bytes = [];
+    const B = (...v) => bytes.push(...v);
+    const maxColors = 256;
+    const colorDepth = 8; // 8 bits/pixel => 256 colors
+    const palSize = 7;    // 2^(7+1)=256
+
+    // Quantize first frame to build global palette
+    const first = quantize(frames[0], maxColors);
+    const gpal = first.palette;
+
+    // Header
+    B(0x47,0x49,0x46,0x38,0x39,0x61); // GIF89a
+    writeUint16LE(bytes, width);
+    writeUint16LE(bytes, height);
+    B(0xF0 | palSize, 0, 0); // GCT present, 256 colors, bgcolor=0, aspect=0
+    // Global color table
+    for (let i = 0; i < 256; i++) {
+      const c = gpal[i] || [0,0,0];
+      B(c[0], c[1], c[2]);
+    }
+    // Netscape loop extension (loop forever)
+    B(0x21,0xFF,0x0B);
+    B(0x4E,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2E,0x30); // NETSCAPE2.0
+    B(0x03,0x01,0x00,0x00,0x00);
+
+    const delayCs = Math.round(delayMs / 10); // centiseconds
+
+    frames.forEach((imgData, fi) => {
+      const { palette, indexed } = fi === 0 ? first : quantize(imgData, maxColors);
+      // Use local color table if frame palette differs from global
+      const useLocal = fi !== 0;
+      const lpalSize = useLocal ? palSize : 0;
+
+      // Graphic Control Extension (delay)
+      B(0x21,0xF9,0x04);
+      B(0x00); // no disposal, no user input
+      writeUint16LE(bytes, delayCs);
+      B(0x00, 0x00); // transparent color index (none), block terminator
+
+      // Image descriptor
+      B(0x2C);
+      writeUint16LE(bytes, 0); writeUint16LE(bytes, 0); // left, top
+      writeUint16LE(bytes, width);
+      writeUint16LE(bytes, height);
+      if (useLocal) {
+        B(0x80 | lpalSize); // local color table, not interlaced
+        for (let i = 0; i < 256; i++) {
+          const c = palette[i] || [0,0,0];
+          B(c[0], c[1], c[2]);
+        }
+      } else {
+        B(0x00); // no local table
+      }
+
+      // LZW
+      B(colorDepth);
+      const lzw = lzwEncode(indexed, colorDepth);
+      // Write as sub-blocks of max 255 bytes
+      for (let i = 0; i < lzw.length; ) {
+        const chunk = Math.min(255, lzw.length - i);
+        B(chunk);
+        for (let j = 0; j < chunk; j++) B(lzw[i++]);
+      }
+      B(0x00); // block terminator
+    });
+
+    B(0x3B); // trailer
+    return new Uint8Array(bytes);
+  }
+
+  return { encode, quantize };
+})();
+
+/* ══ GIF EXPORT ══ */
+async function exportSlideAsGif(slide, trObj, filename, statusCb) {
+  const ticker = slide.querySelector('.transcript-text');
+  const dur     = Math.max(3, trObj.duration || 8);
+  // Keep frame count low for performance: 8fps, max 80 frames
+  const fps          = 8;
+  const totalFrames  = Math.min(Math.round(dur * fps), 80);
+  const frameDelayMs = (dur * 1000) / totalFrames;
+
+  // Downscale to 640×360 for GIF (keeps file size sane)
+  const GW = 640, GH = 360;
+  const offscreen = document.createElement('canvas');
+  offscreen.width = GW; offscreen.height = GH;
+  const ctx = offscreen.getContext('2d');
+
+  const frames = [];
+
+  for (let f = 0; f < totalFrames; f++) {
+    if (statusCb) statusCb(f, totalFrames);
+    const progress = f / totalFrames;
+    if (ticker) {
+      ticker.style.animation = 'none';
+      const trackW = 1280; // slide is always 1280px wide internally
+      const textW  = ticker.scrollWidth || 600;
+      const startX = trackW;
+      const endX   = -textW - 40;
+      ticker.style.left      = '0';
+      ticker.style.transform = `translateX(${startX + (endX - startX) * progress}px)`;
+    }
+    await new Promise(r => setTimeout(r, 20));
+    const cap = await html2canvas(slide, {
+      scale: GW / 1280,
+      useCORS: true, allowTaint: true,
+      width: 1280, height: 720,
+      logging: false, backgroundColor: null
+    });
+    ctx.drawImage(cap, 0, 0, GW, GH);
+    frames.push(new Uint8ClampedArray(ctx.getImageData(0, 0, GW, GH).data));
+  }
+
+  // Restore ticker
+  if (ticker) { ticker.style.animation = ''; ticker.style.transform = ''; }
+
+  // Encode
+  const gifBytes = GifEncoder.encode(frames, GW, GH, frameDelayMs);
+  const blob = new Blob([gifBytes], { type: 'image/gif' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
+}
+
 const BLOCK_TYPES=[
   {type:'text',    label:'Texto',        badge:'bt-text',   emoji:'✏️'},
   {type:'list',    label:'Lista',        badge:'bt-list',   emoji:'📋'},
@@ -822,6 +1214,25 @@ function initSlidesList(){
         <div class="blocks-list" id="blocks-${i}"></div>
         <div class="add-block-bar" style="margin-top:6px">${BLOCK_TYPES.map(bt=>`<button class="abb" onclick="addBlock(${i},'${bt.type}')">${bt.emoji} ${bt.label}</button>`).join('')}</div>
       </div>
+      <hr class="sep">
+      <div>
+        <div class="sec">🎙 Transcrição</div>
+        <div class="transcript-editor">
+          <div class="transcript-toggle-row">
+            <span class="transcript-badge${(s.transcript?.active)?' active-badge':''}" id="slide-tr-badge-${i}">${(s.transcript?.active)?'Ativa':'Desativada'}</span>
+            <button class="wm-opt${(s.transcript?.active)?' active':''}" id="slide-tr-on-${i}"  onclick="setSlideTranscript(${i},true,this)">✅ Ativar</button>
+            <button class="wm-opt${!(s.transcript?.active)?' active':''}" id="slide-tr-off-${i}" onclick="setSlideTranscript(${i},false,this)">🚫 Off</button>
+          </div>
+          <div id="slide-tr-fields-${i}" style="display:${(s.transcript?.active)?'flex':'none'};flex-direction:column;gap:8px">
+            <div><label>Texto da transcrição</label><textarea id="slide-tr-text-${i}" rows="2" placeholder="Texto que rolará da direita para a esquerda no footer..." oninput="slides[${i}].transcript.text=this.value;renderSlides()">${esc(s.transcript?.text||'')}</textarea></div>
+            <div class="tr-dur-row">
+              <label>Duração (segundos)</label>
+              <input type="number" id="slide-tr-dur-${i}" value="${s.transcript?.duration||8}" min="3" max="60" step="1" style="width:80px" oninput="slides[${i}].transcript.duration=+this.value;renderSlides()">
+            </div>
+            <div class="tr-preview-gif">📽️ Export: este slide será salvo como <strong>GIF animado</strong> ao baixar todos</div>
+          </div>
+        </div>
+      </div>
     </div>`;
     list.appendChild(div);
     if(isOpen)renderBlocks(i);
@@ -830,7 +1241,7 @@ function initSlidesList(){
 
 function addSlide(){
   const ni=slides.length;
-  slides.push({eyebrow:'Tópico #0'+(slides.length+1),title:'Novo tópico',hl:'',blocks:[{type:'text',content:''}]});
+  slides.push({eyebrow:'Tópico #0'+(slides.length+1),title:'Novo tópico',hl:'',blocks:[{type:'text',content:''}],transcript:{active:false,text:'',duration:8}});
   openSlideIndex=ni;initSlidesList();renderSlides();
 }
 function removeSlide(i){
@@ -1205,6 +1616,17 @@ function renderSlides(){
   const episode=document.getElementById('postEpisode').value||'';
   const total=slides.length+2;
   const p=activePalette;
+  // Sync transcript state from DOM inputs
+  capaTranscript.text = document.getElementById('capa-tr-text')?.value||'';
+  capaTranscript.duration = +(document.getElementById('capa-tr-dur')?.value||8);
+  closeTranscript.text = document.getElementById('close-tr-text')?.value||'';
+  closeTranscript.duration = +(document.getElementById('close-tr-dur')?.value||10);
+  slides.forEach((s,i)=>{
+    if(s.transcript?.active){
+      s.transcript.text = document.getElementById('slide-tr-text-'+i)?.value||s.transcript.text||'';
+      s.transcript.duration = +(document.getElementById('slide-tr-dur-'+i)?.value||s.transcript.duration||8);
+    }
+  });
   const w=document.getElementById('slidesWrapper');
   w.innerHTML='';
   w.appendChild(makeCoverSlide(topic,category,subtitle,episode,1,total,p));
@@ -1364,7 +1786,7 @@ function makeCoverSlide(topic,category,subtitle,episode,cur,total,p){
 
   const wrap=document.createElement('div');
   wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:6px;width:100%';
-  wrap.innerHTML=`<div class="slide-wrap"><div class="slide" style="background:${p.bg}">${body}</div></div><div class="snum">Slide 1 — Capa</div>`;
+  wrap.innerHTML=`<div class="slide-wrap"><div class="slide" style="background:${p.bg}">${body}${makeTranscriptBar(capaTranscript,p)}</div></div><div class="snum">Slide 1 — Capa</div>`;
   return wrap;
 }
 
@@ -1389,6 +1811,7 @@ function makeContentSlide(s,category,cur,total,p){
     </div>
     ${imgLayerHtml?`<div class="img-layer">${imgLayerHtml}</div>`:''}
     ${makeFtr(category,cur,total,p)}
+    ${makeTranscriptBar(s.transcript,p)}
   </div></div>
   <div class="snum">Slide ${cur} — Conteúdo</div>`;
   return wrap;
@@ -1484,6 +1907,7 @@ function makeClosingSlide(category,cur,total,p){
     ${makeHdr(category,p)}
     <div class="slide-close-body">${body}</div>
     ${makeFtr(handleVal,cur,total,p)}
+    ${makeTranscriptBar(closeTranscript,p)}
   </div></div>
   <div class="snum">Slide ${cur} — Encerramento</div>`;
   return wrap;
@@ -1494,35 +1918,55 @@ async function downloadAll(){
   const slide_els=document.querySelectorAll('.slide');
   if(!slide_els.length)return;
   const btn=document.querySelector('.dl-btn');
-  btn.textContent='⏳ Gerando...';btn.disabled=true;
+  const origBtnText='⬇ Baixar todos (PNG/GIF)';
+  btn.textContent='⏳ Preparando...';btn.disabled=true;
   const topic=(document.getElementById('postTopic').value||'youtube').replace(/[^a-zA-Z0-9À-ÿ\s]/g,'').replace(/\s+/g,'-').slice(0,30);
+
+  // Build per-slide transcript list (capa + content slides + encerramento)
+  const trList = [capaTranscript, ...slides.map(s=>s.transcript||null), closeTranscript];
+
   for(let i=0;i<slide_els.length;i++){
     const slide=slide_els[i];
     const origTransform=slide.style.transform;
     const origPos=slide.style.position;
     const origLeft=slide.style.left;
-    // Reset to natural position for capture
+    const num=String(i+1).padStart(2,'0');
+    const label=i===0?'capa':i===slide_els.length-1?'encerramento':`slide-${num}`;
+    const tr = trList[i];
+
     slide.style.transform='none';
     slide.style.position='relative';
     slide.style.left='0';
     await new Promise(r=>setTimeout(r,80));
+
     try{
-      const canvas=await html2canvas(slide,{scale:1,useCORS:true,allowTaint:true,width:1280,height:720,logging:false,backgroundColor:null});
-      const link=document.createElement('a');
-      const num=String(i+1).padStart(2,'0');
-      const label=i===0?'capa':i===slide_els.length-1?'encerramento':`slide-${num}`;
-      link.download=`yt-${topic}-${label}.png`;
-      link.href=canvas.toDataURL('image/png');
-      link.click();
-      await new Promise(r=>setTimeout(r,400));
-    }catch(e){console.error(e);}
-    // Restore
+      if(tr?.active && tr.text){
+        // GIF com ticker animado
+        btn.textContent=`⏳ GIF ${label} (frame 0/${Math.min(Math.round((tr.duration||8)*8),80)})...`;
+        await exportSlideAsGif(slide, tr, `yt-${topic}-${label}.gif`, (f,total)=>{
+          btn.textContent=`⏳ GIF ${label} (frame ${f}/${total})...`;
+        });
+        await new Promise(r=>setTimeout(r,600));
+      } else {
+        btn.textContent=`⏳ PNG ${label}...`;
+        const canvas=await html2canvas(slide,{scale:1,useCORS:true,allowTaint:true,width:1280,height:720,logging:false,backgroundColor:null});
+        const link=document.createElement('a');
+        link.download=`yt-${topic}-${label}.png`;
+        link.href=canvas.toDataURL('image/png');
+        link.click();
+        await new Promise(r=>setTimeout(r,400));
+      }
+    }catch(e){
+      console.error('Erro no slide '+label,e);
+    }
+
     slide.style.transform=origTransform;
     slide.style.position=origPos;
     slide.style.left=origLeft;
   }
-  btn.textContent='⬇ Baixar todos (PNG)';btn.disabled=false;
+  btn.textContent=origBtnText;btn.disabled=false;
 }
+
 
 /* ══ EXAMPLE ══ */
 function loadExample(){
@@ -1536,10 +1980,10 @@ function loadExample(){
   ctaItems=[{emoji:'👍',label:'Curta o vídeo'},{emoji:'🔔',label:'Inscreva-se'},{emoji:'💬',label:'Deixa um comentário'}];
   renderCtaList();
   slides=[
-    {eyebrow:'Conceito #01',title:'Princípios do Clean Code',hl:'Clean Code',blocks:[{type:'list',content:['Nomes revelam intenção, não implementação','Funções pequenas = uma responsabilidade (SRP)','Comentários explicam o porquê, não o quê'],cols:1}]},
-    {eyebrow:'Na prática',title:'Métodos que comunicam',hl:'comunicam',blocks:[{type:'text',content:'Veja a diferença entre código ruim e ==limpo==:'},{type:'code',lang:'java',content:'// ❌ Ruim\npublic double calc(int x, double y) {\n    return x * y * 0.9;\n}\n\n// ✅ Clean Code\npublic double calcularPrecoComDesconto(\n        int quantidade, double precoUnitario) {\n    final double DESCONTO = 0.9;\n    return quantidade * precoUnitario * DESCONTO;\n}'}]},
-    {eyebrow:'Dados',title:'Impacto no projeto',hl:'Impacto',blocks:[{type:'stat',stats:[{val:'76%',label:'Menos bugs reportados'},{val:'2×',label:'Velocidade de revisão'},{val:'40%',label:'Onboarding mais rápido'},{val:'90%',label:'Cobertura de testes'}]}]},
-    {eyebrow:'Princípio chave',title:'Regra do Boy Scout',hl:'Boy Scout',blocks:[{type:'quote',quoteText:'"Deixe o código sempre mais limpo do que você encontrou."',quoteAuthor:'Robert C. Martin'},{type:'tip',tipIcon:'📌',tipLabel:'LEMBRE-SE',tipText:'Aplique em cada PR, não só em sprints de refatoração.'}]},
+    {eyebrow:'Conceito #01',title:'Princípios do Clean Code',hl:'Clean Code',blocks:[{type:'list',content:['Nomes revelam intenção, não implementação','Funções pequenas = uma responsabilidade (SRP)','Comentários explicam o porquê, não o quê'],cols:1}],transcript:{active:false,text:'',duration:8}},
+    {eyebrow:'Na prática',title:'Métodos que comunicam',hl:'comunicam',blocks:[{type:'text',content:'Veja a diferença entre código ruim e ==limpo==:'},{type:'code',lang:'java',content:'// ❌ Ruim\npublic double calc(int x, double y) {\n    return x * y * 0.9;\n}\n\n// ✅ Clean Code\npublic double calcularPrecoComDesconto(\n        int quantidade, double precoUnitario) {\n    final double DESCONTO = 0.9;\n    return quantidade * precoUnitario * DESCONTO;\n}'}],transcript:{active:false,text:'',duration:8}},
+    {eyebrow:'Dados',title:'Impacto no projeto',hl:'Impacto',blocks:[{type:'stat',stats:[{val:'76%',label:'Menos bugs reportados'},{val:'2×',label:'Velocidade de revisão'},{val:'40%',label:'Onboarding mais rápido'},{val:'90%',label:'Cobertura de testes'}]}],transcript:{active:false,text:'',duration:8}},
+    {eyebrow:'Princípio chave',title:'Regra do Boy Scout',hl:'Boy Scout',blocks:[{type:'quote',quoteText:'"Deixe o código sempre mais limpo do que você encontrou."',quoteAuthor:'Robert C. Martin'},{type:'tip',tipIcon:'📌',tipLabel:'LEMBRE-SE',tipText:'Aplique em cada PR, não só em sprints de refatoração.'}],transcript:{active:false,text:'',duration:8}},
   ];
   openSlideIndex=-1;initSlidesList();renderSlides();
 }
@@ -1547,7 +1991,7 @@ function loadExample(){
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded',()=>{
   initPalettes();initTypo();initIcons();initCapaTpls();initCloseTpls();renderCtaList();
-  slides=[{eyebrow:'Tópico #01',title:'Primeiro slide',hl:'',blocks:[{type:'text',content:'Adicione seu conteúdo aqui.'}]}];
+  slides=[{eyebrow:'Tópico #01',title:'Primeiro slide',hl:'',blocks:[{type:'text',content:'Adicione seu conteúdo aqui.'}],transcript:{active:false,text:'',duration:8}}];
   initSlidesList();renderSlides();
 });
 </script>
