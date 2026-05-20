@@ -284,7 +284,8 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
 /* ══ TRANSCRIÇÃO — TICKER ══ */
 .slide-transcript{
   position:relative;z-index:3;
-  height:36px;flex-shrink:0;
+  /* height set inline via fontSize */
+  flex-shrink:0;
   display:flex;align-items:center;
   overflow:hidden;
   border-top-width:1px;border-top-style:solid;
@@ -310,7 +311,7 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
   white-space:nowrap;
   position:absolute;
   font-family:'DM Sans',sans-serif;
-  font-size:14px;
+  /* font-size set inline */
   font-weight:500;
   animation: tickerScroll linear infinite;
   /* animation-duration set inline */
@@ -453,12 +454,22 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
             <button class="wm-opt active" id="capa-tr-off" onclick="setTranscript('capa',false,this)">🚫 Off</button>
           </div>
           <div id="capa-tr-fields" style="display:none;flex-direction:column;gap:8px">
-            <div><label>Texto da transcrição</label><textarea id="capa-tr-text" rows="2" placeholder="Texto que rolará da direita para a esquerda no footer..." oninput="renderSlides()"></textarea></div>
-            <div class="tr-dur-row">
-              <label>Duração (segundos)</label>
-              <input type="number" id="capa-tr-dur" value="8" min="3" max="60" step="1" style="width:80px" oninput="renderSlides()">
+            <div><label>Texto da transcrição</label><textarea id="capa-tr-text" rows="2" placeholder="Texto que rolará da direita para a esquerda no footer..." oninput="updateTrInfo('capa');renderSlides()"></textarea></div>
+            <div class="row3">
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">Duração (s)</label>
+                <input type="number" id="capa-tr-dur" value="8" min="3" max="60" step="1" oninput="updateTrInfo('capa');renderSlides()">
+              </div>
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">FPS reprodução</label>
+                <input type="number" id="capa-tr-fps" value="10" min="1" max="60" step="1" oninput="updateTrInfo('capa');renderSlides()">
+              </div>
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">Tamanho (px)</label>
+                <input type="number" id="capa-tr-size" value="18" min="10" max="60" step="1" oninput="renderSlides()">
+              </div>
             </div>
-            <div class="tr-preview-gif">📽️ Export: este slide será salvo como <strong>GIF animado</strong> ao baixar todos</div>
+            <div class="tr-preview-gif" id="capa-tr-info">📽️ GIF animado ao baixar • <span id="capa-tr-stat">carregando...</span></div>
           </div>
         </div>
       </div>
@@ -530,12 +541,22 @@ body.layout-h .action-bar{position:sticky;top:0;z-index:20;background:#1A1A1E;pa
             <button class="wm-opt active" id="close-tr-off" onclick="setTranscript('close',false,this)">🚫 Off</button>
           </div>
           <div id="close-tr-fields" style="display:none;flex-direction:column;gap:8px">
-            <div><label>Texto da transcrição</label><textarea id="close-tr-text" rows="2" placeholder="Texto que rolará no footer do slide de encerramento..." oninput="renderSlides()"></textarea></div>
-            <div class="tr-dur-row">
-              <label>Duração (segundos)</label>
-              <input type="number" id="close-tr-dur" value="10" min="3" max="60" step="1" style="width:80px" oninput="renderSlides()">
+            <div><label>Texto da transcrição</label><textarea id="close-tr-text" rows="2" placeholder="Texto que rolará no footer do slide de encerramento..." oninput="updateTrInfo('close');renderSlides()"></textarea></div>
+            <div class="row3">
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">Duração (s)</label>
+                <input type="number" id="close-tr-dur" value="10" min="3" max="60" step="1" oninput="updateTrInfo('close');renderSlides()">
+              </div>
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">FPS reprodução</label>
+                <input type="number" id="close-tr-fps" value="10" min="1" max="60" step="1" oninput="updateTrInfo('close');renderSlides()">
+              </div>
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">Tamanho (px)</label>
+                <input type="number" id="close-tr-size" value="18" min="10" max="60" step="1" oninput="renderSlides()">
+              </div>
             </div>
-            <div class="tr-preview-gif">📽️ Export: este slide será salvo como <strong>GIF animado</strong> ao baixar todos</div>
+            <div class="tr-preview-gif" id="close-tr-info">📽️ GIF animado ao baixar • <span id="close-tr-stat">carregando...</span></div>
           </div>
         </div>
       </div>
@@ -844,8 +865,42 @@ function renderCtaList(){
 let slides=[];
 
 /* ══ TRANSCRIÇÃO — ESTADO GLOBAL ══ */
-let capaTranscript   = {active:false, text:'', duration:8};
-let closeTranscript  = {active:false, text:'', duration:10};
+let capaTranscript   = {active:false, text:'', duration:8,  fps:10, fontSize:18};
+let closeTranscript  = {active:false, text:'', duration:10, fps:10, fontSize:18};
+
+/* ══ TRANSCRIÇÃO — INFO DINÂMICA ══ */
+function calcTrStats(dur, fps) {
+  const playFps  = Math.max(1, Math.min(60, fps || 10));
+  const capFps   = Math.min(playFps, 15);
+  const capCount = Math.min(Math.round(dur * capFps), 150);
+  const gifFrames = Math.round(dur * playFps);
+  const GW = playFps >= 30 ? 960 : playFps >= 15 ? 640 : 480;
+  const GH = playFps >= 30 ? 540 : playFps >= 15 ? 360 : 270;
+  return { playFps, capFps, capCount, gifFrames, GW, GH };
+}
+function trStatText(dur, fps) {
+  const s = calcTrStats(dur, fps);
+  const heavy = s.gifFrames > 300 ? ' ⚠️ arquivo grande' : '';
+  return `${s.capCount} capturas reais → ${s.gifFrames} frames no GIF (${s.playFps}fps · ${s.GW}×${s.GH})${heavy}`;
+}
+function updateTrInfo(type, idx) {
+  let dur, fps, statId;
+  if (type === 'capa') {
+    dur = +(document.getElementById('capa-tr-dur')?.value || 8);
+    fps = +(document.getElementById('capa-tr-fps')?.value || 10);
+    statId = 'capa-tr-stat';
+  } else if (type === 'close') {
+    dur = +(document.getElementById('close-tr-dur')?.value || 10);
+    fps = +(document.getElementById('close-tr-fps')?.value || 10);
+    statId = 'close-tr-stat';
+  } else {
+    dur = +(document.getElementById('slide-tr-dur-'+idx)?.value || 8);
+    fps = +(document.getElementById('slide-tr-fps-'+idx)?.value || 10);
+    statId = 'slide-tr-stat-'+idx;
+  }
+  const el = document.getElementById(statId);
+  if (el) el.textContent = trStatText(dur, fps);
+}
 
 function setTranscript(type, active, el){
   const isClose = type==='close';
@@ -862,11 +917,12 @@ function setTranscript(type, active, el){
   const fieldsId = type+'-tr-fields';
   const fields = document.getElementById(fieldsId);
   if(fields) fields.style.display = active ? 'flex' : 'none';
+  if(active) updateTrInfo(type);
   renderSlides();
 }
 
 function setSlideTranscript(i, active, el){
-  if(!slides[i].transcript) slides[i].transcript = {active:false, text:'', duration:8};
+  if(!slides[i].transcript) slides[i].transcript = {active:false, text:'', duration:8, fps:10, fontSize:18};
   slides[i].transcript.active = active;
   const onBtn  = document.getElementById('slide-tr-on-'+i);
   const offBtn = document.getElementById('slide-tr-off-'+i);
@@ -876,24 +932,27 @@ function setSlideTranscript(i, active, el){
   offBtn?.classList.toggle('active', !active);
   if(badge){ badge.textContent = active ? 'Ativa' : 'Desativada'; badge.className='transcript-badge'+(active?' active-badge':''); }
   if(fields) fields.style.display = active ? 'flex' : 'none';
+  if(active) updateTrInfo('slide', i);
   renderSlides();
 }
 
 /* ══ TRANSCRIÇÃO — RENDER HTML ══ */
 function makeTranscriptBar(trObj, p){
   if(!trObj || !trObj.active || !trObj.text) return '';
-  const dark = isDark(p);
-  const dur  = Math.max(3, trObj.duration || 8);
-  const text = trObj.text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-  const barBg = dark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
-  const labelBg = ha(p.c1, .18);
-  const textColor = dark ? 'rgba(240,240,245,.85)' : p.tMain;
-  return `<div class="slide-transcript" style="background:${barBg};border-top-color:${p.bdr};backdrop-filter:blur(8px)">
+  const dark      = isDark(p);
+  const dur       = Math.max(3, trObj.duration || 8);
+  const fontSize  = Math.max(10, Math.min(60, trObj.fontSize || 18));
+  const barH      = Math.round(fontSize * 2.4); // ~2.4× the font size gives comfortable line height
+  const text      = trObj.text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  const barBg     = dark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)';
+  const labelBg   = ha(p.c1, .18);
+  const textColor = dark ? 'rgba(240,240,245,.9)' : p.tMain;
+  return `<div class="slide-transcript" style="background:${barBg};border-top-color:${p.bdr};backdrop-filter:blur(8px);height:${barH}px">
     <div class="transcript-label" style="color:${p.c1};background:${labelBg};border-right-color:${p.bdr}">
       <span>🎙</span><span>Narração</span>
     </div>
     <div class="transcript-track">
-      <div class="transcript-text" style="color:${textColor};animation-duration:${dur}s">${text}</div>
+      <div class="transcript-text" style="color:${textColor};animation-duration:${dur}s;font-size:${fontSize}px">${text}</div>
     </div>
   </div>`;
 }
@@ -1079,33 +1138,47 @@ const GifEncoder = (() => {
 /* ══ GIF EXPORT ══ */
 async function exportSlideAsGif(slide, trObj, filename, statusCb) {
   const ticker = slide.querySelector('.transcript-text');
-  const dur     = Math.max(3, trObj.duration || 8);
-  // Keep frame count low for performance: 8fps, max 80 frames
-  const fps          = 8;
-  const totalFrames  = Math.min(Math.round(dur * fps), 80);
-  const frameDelayMs = (dur * 1000) / totalFrames;
+  const dur    = Math.max(3, trObj.duration || 8);
 
-  // Downscale to 640×360 for GIF (keeps file size sane)
-  const GW = 640, GH = 360;
+  // ── Dois FPS distintos ──────────────────────────────────────────────────
+  // captureFps: quantas capturas reais fazemos via html2canvas.
+  //   html2canvas é lento (~150-300ms/frame), então limitamos a 15fps reais.
+  //   Independente do playbackFps pedido, não capturamos mais que 15fps.
+  const playbackFps = Math.max(1, Math.min(60, trObj.fps || 10));
+  const captureFps  = Math.min(playbackFps, 15); // teto real de captura
+  const captureCount = Math.min(Math.round(dur * captureFps), 150);
+
+  // Para cada frame capturado, calculamos quantas vezes ele se repete no GIF
+  // de forma que a velocidade de reprodução seja playbackFps.
+  // delay entre frames capturados no GIF = 1000/playbackFps ms × repetições
+  // repetições = playbackFps / captureFps  (pode ser fracionário → arredondamos)
+  const repeatFactor = playbackFps / captureFps; // ex: 60/15 = 4
+  const gifFrameDelayMs = 1000 / playbackFps;    // delay real de cada frame no GIF
+
+  // Resolução do GIF: escala com FPS para balancear tamanho de arquivo
+  // Alta qualidade (fps ≥ 30): 960×540 | Média (fps ≥ 15): 640×360 | Baixa: 480×270
+  const GW = playbackFps >= 30 ? 960 : playbackFps >= 15 ? 640 : 480;
+  const GH = playbackFps >= 30 ? 540 : playbackFps >= 15 ? 360 : 270;
+
   const offscreen = document.createElement('canvas');
   offscreen.width = GW; offscreen.height = GH;
   const ctx = offscreen.getContext('2d');
 
-  const frames = [];
-
-  for (let f = 0; f < totalFrames; f++) {
-    if (statusCb) statusCb(f, totalFrames);
-    const progress = f / totalFrames;
+  // ── Capturar frames reais ───────────────────────────────────────────────
+  const capturedFrames = [];
+  for (let f = 0; f < captureCount; f++) {
+    if (statusCb) statusCb(f, captureCount);
+    const progress = f / captureCount;
     if (ticker) {
       ticker.style.animation = 'none';
-      const trackW = 1280; // slide is always 1280px wide internally
+      const trackW = 1280;
       const textW  = ticker.scrollWidth || 600;
       const startX = trackW;
       const endX   = -textW - 40;
       ticker.style.left      = '0';
       ticker.style.transform = `translateX(${startX + (endX - startX) * progress}px)`;
     }
-    await new Promise(r => setTimeout(r, 20));
+    await new Promise(r => setTimeout(r, 16));
     const cap = await html2canvas(slide, {
       scale: GW / 1280,
       useCORS: true, allowTaint: true,
@@ -1113,14 +1186,26 @@ async function exportSlideAsGif(slide, trObj, filename, statusCb) {
       logging: false, backgroundColor: null
     });
     ctx.drawImage(cap, 0, 0, GW, GH);
-    frames.push(new Uint8ClampedArray(ctx.getImageData(0, 0, GW, GH).data));
+    capturedFrames.push(new Uint8ClampedArray(ctx.getImageData(0, 0, GW, GH).data));
   }
 
-  // Restore ticker
   if (ticker) { ticker.style.animation = ''; ticker.style.transform = ''; }
 
-  // Encode
-  const gifBytes = GifEncoder.encode(frames, GW, GH, frameDelayMs);
+  // ── Expandir frames capturados para o playbackFps desejado ─────────────
+  // Estratégia: cada frame capturado é repetido ⌊repeatFactor⌋ ou ⌈repeatFactor⌉
+  // vezes, distribuindo o erro para que o total de frames no GIF corresponda
+  // exatamente a dur × playbackFps.
+  const targetGifFrames = Math.round(dur * playbackFps);
+  const gifFrames = [];
+  for (let i = 0; i < targetGifFrames; i++) {
+    // qual frame capturado corresponde a este instante de reprodução?
+    const t = i / targetGifFrames;                  // 0..1
+    const ci = Math.min(Math.floor(t * captureCount), captureCount - 1);
+    gifFrames.push(capturedFrames[ci]);
+  }
+
+  // ── Encode e download ───────────────────────────────────────────────────
+  const gifBytes = GifEncoder.encode(gifFrames, GW, GH, gifFrameDelayMs);
   const blob = new Blob([gifBytes], { type: 'image/gif' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -1224,12 +1309,22 @@ function initSlidesList(){
             <button class="wm-opt${!(s.transcript?.active)?' active':''}" id="slide-tr-off-${i}" onclick="setSlideTranscript(${i},false,this)">🚫 Off</button>
           </div>
           <div id="slide-tr-fields-${i}" style="display:${(s.transcript?.active)?'flex':'none'};flex-direction:column;gap:8px">
-            <div><label>Texto da transcrição</label><textarea id="slide-tr-text-${i}" rows="2" placeholder="Texto que rolará da direita para a esquerda no footer..." oninput="slides[${i}].transcript.text=this.value;renderSlides()">${esc(s.transcript?.text||'')}</textarea></div>
-            <div class="tr-dur-row">
-              <label>Duração (segundos)</label>
-              <input type="number" id="slide-tr-dur-${i}" value="${s.transcript?.duration||8}" min="3" max="60" step="1" style="width:80px" oninput="slides[${i}].transcript.duration=+this.value;renderSlides()">
+            <div><label>Texto da transcrição</label><textarea id="slide-tr-text-${i}" rows="2" placeholder="Texto que rolará da direita para a esquerda no footer..." oninput="slides[${i}].transcript.text=this.value;updateTrInfo('slide',${i});renderSlides()">${esc(s.transcript?.text||'')}</textarea></div>
+            <div class="row3">
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">Duração (s)</label>
+                <input type="number" id="slide-tr-dur-${i}" value="${s.transcript?.duration||8}" min="3" max="60" step="1" oninput="slides[${i}].transcript.duration=+this.value;updateTrInfo('slide',${i});renderSlides()">
+              </div>
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">FPS reprodução</label>
+                <input type="number" id="slide-tr-fps-${i}" value="${s.transcript?.fps||10}" min="1" max="60" step="1" oninput="slides[${i}].transcript.fps=+this.value;updateTrInfo('slide',${i});renderSlides()">
+              </div>
+              <div class="tr-dur-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+                <label style="margin-bottom:0">Tamanho (px)</label>
+                <input type="number" id="slide-tr-size-${i}" value="${s.transcript?.fontSize||18}" min="10" max="60" step="1" oninput="slides[${i}].transcript.fontSize=+this.value;renderSlides()">
+              </div>
             </div>
-            <div class="tr-preview-gif">📽️ Export: este slide será salvo como <strong>GIF animado</strong> ao baixar todos</div>
+            <div class="tr-preview-gif" id="slide-tr-info-${i}">📽️ GIF animado ao baixar • <span id="slide-tr-stat-${i}">—</span></div>
           </div>
         </div>
       </div>
@@ -1241,7 +1336,7 @@ function initSlidesList(){
 
 function addSlide(){
   const ni=slides.length;
-  slides.push({eyebrow:'Tópico #0'+(slides.length+1),title:'Novo tópico',hl:'',blocks:[{type:'text',content:''}],transcript:{active:false,text:'',duration:8}});
+  slides.push({eyebrow:'Tópico #0'+(slides.length+1),title:'Novo tópico',hl:'',blocks:[{type:'text',content:''}],transcript:{active:false,text:'',duration:8,fps:10,fontSize:18}});
   openSlideIndex=ni;initSlidesList();renderSlides();
 }
 function removeSlide(i){
@@ -1617,14 +1712,20 @@ function renderSlides(){
   const total=slides.length+2;
   const p=activePalette;
   // Sync transcript state from DOM inputs
-  capaTranscript.text = document.getElementById('capa-tr-text')?.value||'';
+  capaTranscript.text     = document.getElementById('capa-tr-text')?.value||'';
   capaTranscript.duration = +(document.getElementById('capa-tr-dur')?.value||8);
-  closeTranscript.text = document.getElementById('close-tr-text')?.value||'';
+  capaTranscript.fps      = +(document.getElementById('capa-tr-fps')?.value||8);
+  capaTranscript.fontSize = +(document.getElementById('capa-tr-size')?.value||18);
+  closeTranscript.text     = document.getElementById('close-tr-text')?.value||'';
   closeTranscript.duration = +(document.getElementById('close-tr-dur')?.value||10);
+  closeTranscript.fps      = +(document.getElementById('close-tr-fps')?.value||8);
+  closeTranscript.fontSize = +(document.getElementById('close-tr-size')?.value||18);
   slides.forEach((s,i)=>{
     if(s.transcript?.active){
-      s.transcript.text = document.getElementById('slide-tr-text-'+i)?.value||s.transcript.text||'';
+      s.transcript.text     = document.getElementById('slide-tr-text-'+i)?.value||s.transcript.text||'';
       s.transcript.duration = +(document.getElementById('slide-tr-dur-'+i)?.value||s.transcript.duration||8);
+      s.transcript.fps      = +(document.getElementById('slide-tr-fps-'+i)?.value||s.transcript.fps||8);
+      s.transcript.fontSize = +(document.getElementById('slide-tr-size-'+i)?.value||s.transcript.fontSize||18);
     }
   });
   const w=document.getElementById('slidesWrapper');
@@ -1941,10 +2042,11 @@ async function downloadAll(){
 
     try{
       if(tr?.active && tr.text){
-        // GIF com ticker animado
-        btn.textContent=`⏳ GIF ${label} (frame 0/${Math.min(Math.round((tr.duration||8)*8),80)})...`;
+        const capFps = Math.min(tr.fps||10, 15);
+        const capCount = Math.min(Math.round((tr.duration||8)*capFps), 150);
+        btn.textContent=`⏳ GIF ${label} — capturando frame 0/${capCount}...`;
         await exportSlideAsGif(slide, tr, `yt-${topic}-${label}.gif`, (f,total)=>{
-          btn.textContent=`⏳ GIF ${label} (frame ${f}/${total})...`;
+          btn.textContent=`⏳ GIF ${label} — capturando frame ${f+1}/${total}...`;
         });
         await new Promise(r=>setTimeout(r,600));
       } else {
@@ -1980,10 +2082,10 @@ function loadExample(){
   ctaItems=[{emoji:'👍',label:'Curta o vídeo'},{emoji:'🔔',label:'Inscreva-se'},{emoji:'💬',label:'Deixa um comentário'}];
   renderCtaList();
   slides=[
-    {eyebrow:'Conceito #01',title:'Princípios do Clean Code',hl:'Clean Code',blocks:[{type:'list',content:['Nomes revelam intenção, não implementação','Funções pequenas = uma responsabilidade (SRP)','Comentários explicam o porquê, não o quê'],cols:1}],transcript:{active:false,text:'',duration:8}},
-    {eyebrow:'Na prática',title:'Métodos que comunicam',hl:'comunicam',blocks:[{type:'text',content:'Veja a diferença entre código ruim e ==limpo==:'},{type:'code',lang:'java',content:'// ❌ Ruim\npublic double calc(int x, double y) {\n    return x * y * 0.9;\n}\n\n// ✅ Clean Code\npublic double calcularPrecoComDesconto(\n        int quantidade, double precoUnitario) {\n    final double DESCONTO = 0.9;\n    return quantidade * precoUnitario * DESCONTO;\n}'}],transcript:{active:false,text:'',duration:8}},
-    {eyebrow:'Dados',title:'Impacto no projeto',hl:'Impacto',blocks:[{type:'stat',stats:[{val:'76%',label:'Menos bugs reportados'},{val:'2×',label:'Velocidade de revisão'},{val:'40%',label:'Onboarding mais rápido'},{val:'90%',label:'Cobertura de testes'}]}],transcript:{active:false,text:'',duration:8}},
-    {eyebrow:'Princípio chave',title:'Regra do Boy Scout',hl:'Boy Scout',blocks:[{type:'quote',quoteText:'"Deixe o código sempre mais limpo do que você encontrou."',quoteAuthor:'Robert C. Martin'},{type:'tip',tipIcon:'📌',tipLabel:'LEMBRE-SE',tipText:'Aplique em cada PR, não só em sprints de refatoração.'}],transcript:{active:false,text:'',duration:8}},
+    {eyebrow:'Conceito #01',title:'Princípios do Clean Code',hl:'Clean Code',blocks:[{type:'list',content:['Nomes revelam intenção, não implementação','Funções pequenas = uma responsabilidade (SRP)','Comentários explicam o porquê, não o quê'],cols:1}],transcript:{active:false,text:'',duration:8,fps:10,fontSize:18}},
+    {eyebrow:'Na prática',title:'Métodos que comunicam',hl:'comunicam',blocks:[{type:'text',content:'Veja a diferença entre código ruim e ==limpo==:'},{type:'code',lang:'java',content:'// ❌ Ruim\npublic double calc(int x, double y) {\n    return x * y * 0.9;\n}\n\n// ✅ Clean Code\npublic double calcularPrecoComDesconto(\n        int quantidade, double precoUnitario) {\n    final double DESCONTO = 0.9;\n    return quantidade * precoUnitario * DESCONTO;\n}'}],transcript:{active:false,text:'',duration:8,fps:10,fontSize:18}},
+    {eyebrow:'Dados',title:'Impacto no projeto',hl:'Impacto',blocks:[{type:'stat',stats:[{val:'76%',label:'Menos bugs reportados'},{val:'2×',label:'Velocidade de revisão'},{val:'40%',label:'Onboarding mais rápido'},{val:'90%',label:'Cobertura de testes'}]}],transcript:{active:false,text:'',duration:8,fps:10,fontSize:18}},
+    {eyebrow:'Princípio chave',title:'Regra do Boy Scout',hl:'Boy Scout',blocks:[{type:'quote',quoteText:'"Deixe o código sempre mais limpo do que você encontrou."',quoteAuthor:'Robert C. Martin'},{type:'tip',tipIcon:'📌',tipLabel:'LEMBRE-SE',tipText:'Aplique em cada PR, não só em sprints de refatoração.'}],transcript:{active:false,text:'',duration:8,fps:10,fontSize:18}},
   ];
   openSlideIndex=-1;initSlidesList();renderSlides();
 }
@@ -1991,7 +2093,7 @@ function loadExample(){
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded',()=>{
   initPalettes();initTypo();initIcons();initCapaTpls();initCloseTpls();renderCtaList();
-  slides=[{eyebrow:'Tópico #01',title:'Primeiro slide',hl:'',blocks:[{type:'text',content:'Adicione seu conteúdo aqui.'}],transcript:{active:false,text:'',duration:8}}];
+  slides=[{eyebrow:'Tópico #01',title:'Primeiro slide',hl:'',blocks:[{type:'text',content:'Adicione seu conteúdo aqui.'}],transcript:{active:false,text:'',duration:8,fps:10,fontSize:18}}];
   initSlidesList();renderSlides();
 });
 </script>
