@@ -874,8 +874,8 @@ function calcTrStats(dur, fps) {
   const capFps   = Math.min(playFps, 15);
   const capCount = Math.min(Math.round(dur * capFps), 150);
   const gifFrames = Math.round(dur * playFps);
-  const GW = playFps >= 30 ? 960 : playFps >= 15 ? 640 : 480;
-  const GH = playFps >= 30 ? 540 : playFps >= 15 ? 360 : 270;
+  const GW = 1280;
+  const GH = 720;
   return { playFps, capFps, capCount, gifFrames, GW, GH };
 }
 function trStatText(dur, fps) {
@@ -1155,10 +1155,10 @@ async function exportSlideAsGif(slide, trObj, filename, statusCb) {
   const repeatFactor = playbackFps / captureFps; // ex: 60/15 = 4
   const gifFrameDelayMs = 1000 / playbackFps;    // delay real de cada frame no GIF
 
-  // Resolução do GIF: escala com FPS para balancear tamanho de arquivo
-  // Alta qualidade (fps ≥ 30): 960×540 | Média (fps ≥ 15): 640×360 | Baixa: 480×270
-  const GW = playbackFps >= 30 ? 960 : playbackFps >= 15 ? 640 : 480;
-  const GH = playbackFps >= 30 ? 540 : playbackFps >= 15 ? 360 : 270;
+  // Resolução do GIF: sempre 1280×720 (resolução nativa do slide)
+  // Preserva as proporções originais independente do FPS configurado.
+  const GW = 1280;
+  const GH = 720;
 
   const offscreen = document.createElement('canvas');
   offscreen.width = GW; offscreen.height = GH;
