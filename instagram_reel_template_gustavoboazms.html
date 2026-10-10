@@ -312,6 +312,7 @@ body.layout-h .reels-wrapper{gap:16px;}
 .img-transform-rm:hover{background:rgba(239,68,68,.3);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/build/mp4-muxer.min.js"></script>
 </head>
 <body>
 
@@ -516,8 +517,8 @@ body.layout-h .reels-wrapper{gap:16px;}
   </div>
   <div class="reels-wrapper" id="reelsWrapper"></div>
   <div class="xhint" id="exportHint">
-    <div class="xhint-text">💡 Cada tela é exportada como <strong>PNG 1080×1920px</strong>. Ao clicar, escolha a pasta de destino — os arquivos serão salvos com o título + numeração sequencial (<strong>titulo_tela_01.png</strong>, <strong>02.png</strong>…).</div>
-    <button class="btn-export" id="btnExport" onclick="exportAllReels()">⬇ Baixar todas as telas (PNG)</button>
+    <div class="xhint-text">💡 Cada tela é exportada como <strong>PNG 1080×1920px</strong>. Ao clicar, escolha a pasta de destino — os arquivos serão salvos com o título + numeração sequencial (<strong>titulo_tela_01.png</strong>, <strong>02.png</strong>…).<br>🎬 Em seguida é gerado o vídeo <strong>titulo_reel.mp4</strong> (1080×1920 · 30 fps) com <strong>60 s</strong> divididos igualmente entre as telas.</div>
+    <button class="btn-export" id="btnExport" onclick="exportAllReels()">⬇ Baixar telas (PNG) + vídeo (MP4)</button>
     <div class="export-progress" id="exportProgress"></div>
   </div>
 </div>
@@ -1929,6 +1930,7 @@ async function exportAllReels() {
   btn.textContent = '⏳ Exportando…';
   progress.style.display = 'block';
 
+  const frames = []; // canvases das telas, reaproveitados no vídeo
   for (let i = 0; i < total; i++) {
     const el = reelEls[i];
     const num = String(i + 1).padStart(2, '0');
@@ -1947,6 +1949,7 @@ async function exportAllReels() {
         scale: EXPORT_SCALE, useCORS: true, allowTaint: true,
         backgroundColor: null, width: REEL_W, height: REEL_H, logging: false
       });
+      frames.push(canvas);
 
       if (dirHandle) {
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
@@ -1971,10 +1974,146 @@ async function exportAllReels() {
     el.style.height    = origHeight;
   }
 
-  progress.textContent = `✅ ${total} tela${total > 1 ? 's exportadas' : ' exportada'}! (${baseName}_tela_01 … ${String(total).padStart(2,'0')})`;
+  const pngMsg = `✅ ${total} tela${total > 1 ? 's exportadas' : ' exportada'}! (${baseName}_tela_01 … ${String(total).padStart(2,'0')})`;
+  progress.textContent = pngMsg;
+
+  // ── Vídeo MP4 a partir das mesmas telas ──
+  if (frames.length) {
+    btn.textContent = '🎬 Gerando vídeo…';
+    try {
+      const videoName = await exportReelVideo(frames, baseName, dirHandle, progress);
+      progress.textContent = `${pngMsg} + 🎬 ${videoName}`;
+    } catch(e) {
+      console.error('Erro no vídeo', e);
+      progress.textContent = `${pngMsg} · ⚠️ Vídeo não gerado: ${e.message}`;
+    }
+  }
+
   btn.disabled    = false;
-  btn.textContent = '⬇ Baixar todas as telas (PNG)';
-  setTimeout(() => { progress.style.display = 'none'; }, 6000);
+  btn.textContent = '⬇ Baixar telas (PNG) + vídeo (MP4)';
+  setTimeout(() => { progress.style.display = 'none'; }, 8000);
+}
+
+/* ══ EXPORT MP4 ══
+   Vídeo 1080×1920 · 30 fps · sempre 60 s, divididos igualmente entre as telas,
+   com um fade curto no fim de cada tela (dentro do tempo dela, sem alterar o total).
+   1º WebCodecs + mp4-muxer: codifica mais rápido que o tempo real.
+   Fallback: MediaRecorder, gravando em tempo real (60 s) — MP4 se o navegador suportar, senão WebM. */
+const VIDEO_W = 1080, VIDEO_H = 1920, VIDEO_FPS = 30, VIDEO_TOTAL_S = 60, VIDEO_FADE_S = 0.4;
+
+function drawVideoFrame(ctx, frames, t) {
+  const seg  = VIDEO_TOTAL_S / frames.length;
+  const fade = Math.min(VIDEO_FADE_S, seg / 2);
+  const i    = Math.min(frames.length - 1, Math.floor(t / seg));
+  const into = t - ((i + 1) * seg - fade); // > 0 durante o fade para a próxima tela
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, VIDEO_W, VIDEO_H);
+  ctx.drawImage(frames[i], 0, 0, VIDEO_W, VIDEO_H);
+  if (i < frames.length - 1 && into > 0) {
+    ctx.globalAlpha = Math.min(1, into / fade);
+    ctx.drawImage(frames[i + 1], 0, 0, VIDEO_W, VIDEO_H);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function makeVideoCanvas() {
+  const canvas = document.createElement('canvas');
+  canvas.width = VIDEO_W; canvas.height = VIDEO_H;
+  return [canvas, canvas.getContext('2d')];
+}
+
+async function encodeReelMp4(frames, onProgress) {
+  if (!(window.VideoEncoder && window.VideoFrame && window.Mp4Muxer)) return null;
+  // H.264 High → Main → Baseline, nível 4.0 (comporta 1080×1920 a 30 fps)
+  let config = null;
+  for (const codec of ['avc1.640028', 'avc1.4d0028', 'avc1.420028']) {
+    const c = { codec, width: VIDEO_W, height: VIDEO_H, bitrate: 6_000_000, framerate: VIDEO_FPS };
+    try { if ((await VideoEncoder.isConfigSupported(c)).supported) { config = c; break; } } catch(e) {}
+  }
+  if (!config) return null;
+
+  const muxer = new Mp4Muxer.Muxer({
+    target: new Mp4Muxer.ArrayBufferTarget(),
+    video: { codec: 'avc', width: VIDEO_W, height: VIDEO_H },
+    fastStart: 'in-memory',
+  });
+  let encError = null;
+  const encoder = new VideoEncoder({
+    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    error:  e => { encError = e; },
+  });
+  encoder.configure(config);
+
+  const [canvas, ctx] = makeVideoCanvas();
+  const totalFrames = VIDEO_TOTAL_S * VIDEO_FPS;
+  for (let f = 0; f < totalFrames; f++) {
+    if (encError) throw encError;
+    drawVideoFrame(ctx, frames, f / VIDEO_FPS);
+    const vf = new VideoFrame(canvas, { timestamp: Math.round(f * 1e6 / VIDEO_FPS), duration: Math.round(1e6 / VIDEO_FPS) });
+    encoder.encode(vf, { keyFrame: f % (VIDEO_FPS * 2) === 0 });
+    vf.close();
+    while (encoder.encodeQueueSize > 8) await new Promise(r => setTimeout(r, 0));
+    if (f % VIDEO_FPS === 0) onProgress(f / totalFrames);
+  }
+  await encoder.flush();
+  encoder.close();
+  if (encError) throw encError;
+  muxer.finalize();
+  return { blob: new Blob([muxer.target.buffer], { type: 'video/mp4' }), ext: 'mp4' };
+}
+
+async function recordReelVideo(frames, onProgress) {
+  if (!window.MediaRecorder) return null;
+  const mimeType = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm']
+    .find(t => MediaRecorder.isTypeSupported(t));
+  if (!mimeType) return null;
+
+  const [canvas, ctx] = makeVideoCanvas();
+  drawVideoFrame(ctx, frames, 0);
+  const rec    = new MediaRecorder(canvas.captureStream(VIDEO_FPS), { mimeType, videoBitsPerSecond: 6_000_000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(r => { rec.onstop = r; });
+  rec.start(1000);
+  const t0 = performance.now();
+  await new Promise(resolve => {
+    (function tick() {
+      const t = (performance.now() - t0) / 1000;
+      if (t >= VIDEO_TOTAL_S) return resolve();
+      drawVideoFrame(ctx, frames, t);
+      onProgress(t / VIDEO_TOTAL_S);
+      setTimeout(tick, 1000 / VIDEO_FPS);
+    })();
+  });
+  rec.stop();
+  await stopped;
+  return { blob: new Blob(chunks, { type: mimeType }), ext: mimeType.startsWith('video/mp4') ? 'mp4' : 'webm' };
+}
+
+async function exportReelVideo(frames, baseName, dirHandle, progress) {
+  const perScreen = +(VIDEO_TOTAL_S / frames.length).toFixed(1);
+  const label = (p, extra = '') => `🎬 Gerando vídeo (${VIDEO_TOTAL_S}s · ${perScreen}s por tela) — ${Math.round(p * 100)}%${extra}`;
+
+  let result = await encodeReelMp4(frames, p => { progress.textContent = label(p); });
+  if (!result) result = await recordReelVideo(frames, p => { progress.textContent = label(p, ' · gravando em tempo real, mantenha esta aba aberta'); });
+  if (!result) throw new Error('navegador sem suporte a geração de vídeo (use o Chrome ou o Edge)');
+
+  const fileName = `${baseName}_reel.${result.ext}`;
+  if (dirHandle) {
+    const fh = await dirHandle.getFileHandle(fileName, { create: true });
+    const ws = await fh.createWritable();
+    await ws.write(result.blob);
+    await ws.close();
+  } else {
+    const url  = URL.createObjectURL(result.blob);
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href     = url;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+  return fileName;
 }
 
 /* ══ INIT ══ */

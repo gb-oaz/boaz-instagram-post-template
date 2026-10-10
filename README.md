@@ -360,6 +360,17 @@ Python · Java · Kotlin · JavaScript · TypeScript · C# · C/C++ · Go · Rus
 
 **PNG direto (recomendado):** Clique em **⬇ Baixar todos os slides (PNG)**. Todos os slides são gerados em resolução real e baixados sequencialmente.
 
+**Vídeo MP4 do Reel:** no template de Reel, o botão **⬇ Baixar telas (PNG) + vídeo (MP4)** exporta as telas e, em seguida, gera `titulo_reel.mp4`:
+
+| Item | Valor |
+|---|---|
+| Resolução | 1080×1920 (9:16), 30 fps, H.264 |
+| Duração | **sempre 60 s**, divididos igualmente entre as telas (ex.: 6 telas = 10 s cada) |
+| Transição | fade de 0,4 s no fim de cada tela, dentro do tempo dela |
+| Áudio | nenhum: adicione narração ou música no editor de vídeo |
+
+No Chrome, Edge e navegadores com WebCodecs, o vídeo é codificado em segundos. Sem WebCodecs, o template grava em tempo real com MediaRecorder: leva 60 s, a aba precisa ficar aberta, e o arquivo sai em MP4 se o navegador suportar, senão em WebM.
+
 **Screenshot manual:** Use uma extensão de browser como **GoFullPage**, **Fireshot** ou **Awesome Screenshot** para capturar cada slide individualmente.
 
 **Como PDF:**
@@ -400,6 +411,10 @@ Cada arquivo é autossuficiente — não há dependências locais, pastas de ass
 ---
 
 ## Changelog
+
+### v4 — vídeo MP4 no Reel
+
+- **Exportar Reel em vídeo** — o botão de download do template de Reel passa a gerar também um `.mp4` 1080×1920 de 60 s, com o tempo dividido igualmente entre as telas e fade entre elas; usa WebCodecs + [mp4-muxer](https://github.com/Vanilagy/mp4-muxer) (CDN), com fallback para MediaRecorder
 
 ### v3 — template YouTube + correções de UX
 
