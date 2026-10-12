@@ -1183,7 +1183,8 @@ async function exportSlideAsGif(slide, trObj, filename, statusCb) {
       scale: GW / 1280,
       useCORS: true, allowTaint: true,
       width: 1280, height: 720,
-      logging: false, backgroundColor: null
+      logging: false, backgroundColor: null,
+      onclone: solidGradientText
     });
     ctx.drawImage(cap, 0, 0, GW, GH);
     capturedFrames.push(new Uint8ClampedArray(ctx.getImageData(0, 0, GW, GH).data));
@@ -1400,7 +1401,7 @@ function renderBlocks(si){
         </div>
       </div>`;
     }else if(b.type==='code'){
-      const LANGS=['python','javascript','typescript','java','kotlin','csharp','cpp','go','rust','php','ruby','swift','sql','html','css','bash','yaml','json','xml','dockerfile','text'];
+      const LANGS=['python','javascript','typescript','java','kotlin','csharp','cpp','go','rust','php','ruby','swift','sql','html','css','bash','yaml','json','xml','dockerfile','terraform','text'];
       const langOpts=LANGS.map(l=>`<option value="${l}" ${(b.lang||'python')===l?'selected':''}>${l}</option>`).join('');
       inner=`<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid var(--border)">
         <span style="font-size:11px;color:var(--muted)">Linguagem:</span>
@@ -1516,6 +1517,17 @@ function highlight(code,lang){
 
   let c=e(code);
   if(lang==='text'||lang==='plain')return c;
+
+  if (lang==='terraform'||lang==='hcl') {
+    // Terraform / HCL: cabeçalhos de bloco, atributos, strings com ${interpolação} e comentários
+    const str = s => s.split(/(\$\{[^}]*\})/).filter(Boolean).map(x => x.startsWith('${') ? w('d', x) : w('s', x)).join('');
+    return c.split('\n').map(line => {
+      const h = line.match(/^(\s*)([A-Za-z_][\w-]*)((?:\s+"[^"]*")*)(\s*\{\s*)$/);
+      if (h) return h[1] + w('k', h[2]) + h[3].replace(/"[^"]*"/g, m => w('t', m)) + h[4];
+      return line.replace(/(#.*$|\/\/.*$)|("(?:[^"\\]|\\.)*")|\b(true|false|null)\b|\b(\d+(?:\.\d+)?)\b|([A-Za-z_][\w-]*)(?=\s*=(?!=))/g,
+        (m, cm, st, kw, num, attr) => cm ? w('c', cm) : st ? str(st) : kw ? w('k', kw) : num ? w('n', num) : w('v', attr));
+    }).join('\n');
+  }
 
   if(lang==='java'){
     const KW=/\b(public|private|protected|static|final|void|class|interface|enum|extends|implements|new|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|finally|throw|throws|import|package|this|super|null|true|false|abstract|synchronized|volatile|transient|native|instanceof)\b/g;
@@ -1698,9 +1710,19 @@ function renderBlockHTML(b,p){
     return`<div style="overflow:hidden;border-radius:8px;border:1px solid ${borderClr}"><table style="width:100%;border-collapse:collapse"><thead><tr>${thCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
   }
   if(b.type==='divider'){const lineClr=ha(p.c1,.3);const label=b.divLabel?`<span class="div-label" style="color:${p.tMuted};padding:0 12px">${xh(b.divLabel)}</span>`:'';return`<div class="divider-block"><div class="div-line" style="background:linear-gradient(to right,transparent,${lineClr})"></div>${label}<div class="div-line" style="background:linear-gradient(to left,transparent,${lineClr})"></div></div>`;}
-  if(b.type==='code'){const ld=b.lang||'python';const cbBg=p.cbBg||(isDark(p)?'rgba(0,0,0,.5)':'#F0F0F8');const mf=activeTypo.mf;const ICONS2={python:'🐍',javascript:'🟨',typescript:'🔷',java:'☕',kotlin:'🟣',csharp:'🔵',cpp:'⚙️',go:'🐹',rust:'🦀',php:'🐘',ruby:'💎',swift:'🍎',sql:'🗄️',html:'🌐',css:'🎨',bash:'💻',yaml:'📄',json:'📋',xml:'📋',dockerfile:'🐳',text:'📝'};return`<div class="code-block" style="background:${cbBg};border-left-color:${p.c1}"><div class="cbh" style="background:${isDark(p)?'rgba(0,0,0,.25)':'rgba(0,0,0,.06)'}"><div class="cbh-dots"><span></span><span></span><span></span></div><span class="cbh-lang" style="color:${p.c1}">${ICONS2[ld]||'💻'} ${ld}</span></div><pre style="color:${isDark(p)?'rgba(240,240,245,.85)':p.tMain};font-family:${mf}">${highlight(b.content||'',ld)}</pre></div>`;}
+  if(b.type==='code'){const ld=b.lang||'python';const cbBg=p.cbBg||(isDark(p)?'rgba(0,0,0,.5)':'#F0F0F8');const mf=activeTypo.mf;const ICONS2={python:'🐍',javascript:'🟨',typescript:'🔷',java:'☕',kotlin:'🟣',csharp:'🔵',cpp:'⚙️',go:'🐹',rust:'🦀',php:'🐘',ruby:'💎',swift:'🍎',sql:'🗄️',html:'🌐',css:'🎨',bash:'💻',yaml:'📄',json:'📋',xml:'📋',dockerfile:'🐳',terraform:'🟪',text:'📝'};return`<div class="code-block" style="background:${cbBg};border-left-color:${p.c1}"><div class="cbh" style="background:${isDark(p)?'rgba(0,0,0,.25)':'rgba(0,0,0,.06)'}"><div class="cbh-dots"><span></span><span></span><span></span></div><span class="cbh-lang" style="color:${p.c1}">${ICONS2[ld]||'💻'} ${ld}</span></div><pre style="color:${isDark(p)?'rgba(240,240,245,.85)':p.tMain};font-family:${mf}">${highlight(b.content||'',ld)}</pre></div>`;}
   if(b.type==='image')return'';
   return'';
+}
+
+/* html2canvas não suporta background-clip:text: na cópia exportada, texto em gradiente vira a cor principal */
+function solidGradientText(doc) {
+  doc.querySelectorAll('[style]').forEach(el => {
+    if (el.style.backgroundClip !== 'text' && el.style.webkitBackgroundClip !== 'text') return;
+    el.style.background = 'none';
+    el.style.webkitTextFillColor = activePalette.c1;
+    el.style.color = activePalette.c1;
+  });
 }
 
 /* ══ MAKE SLIDES ══ */
@@ -2051,7 +2073,7 @@ async function downloadAll(){
         await new Promise(r=>setTimeout(r,600));
       } else {
         btn.textContent=`⏳ PNG ${label}...`;
-        const canvas=await html2canvas(slide,{scale:1,useCORS:true,allowTaint:true,width:1280,height:720,logging:false,backgroundColor:null});
+        const canvas=await html2canvas(slide,{scale:1,useCORS:true,allowTaint:true,width:1280,height:720,logging:false,backgroundColor:null,onclone:solidGradientText});
         const link=document.createElement('a');
         link.download=`yt-${topic}-${label}.png`;
         link.href=canvas.toDataURL('image/png');

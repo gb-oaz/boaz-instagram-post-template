@@ -180,7 +180,7 @@ Slide 2+  →  Conteúdo   (ilimitados, reordenáveis)
 | ⚠️ Dica / Aviso | Com ícone e label personalizáveis |
 | ⚖️ Comparar | N colunas lado a lado (expansível), layout wrap centralizado |
 | 🖼️ Imagem | Posicionamento livre no slide com mini-canvas de drag, resize e rotação |
-| 💻 Código | Syntax highlighting — 23 linguagens |
+| 💻 Código | Syntax highlighting — 24 linguagens |
 | 🗂️ Tabela | Tabela com N colunas e linhas dinâmicas, estilizada com as cores do tema |
 | ─ Divisor | Separador decorativo |
 
@@ -230,7 +230,7 @@ Tela 2+  →  Conteúdo     (ilimitadas, reordenáveis)
 | 💡 Destaque | Card com borda lateral colorida. Suporta destaque inline com `==palavra==` |
 | ⚠️ Dica | Com ícone e label personalizáveis |
 | ⚖️ Comparar | N colunas expansíveis, layout wrap centralizado |
-| 💻 Código | Syntax highlighting — 15 linguagens |
+| 💻 Código | Syntax highlighting — 16 linguagens |
 | 🗂️ Tabela | Tabela com N colunas e linhas dinâmicas, estilizada com as cores do tema |
 
 ---
@@ -288,7 +288,7 @@ Slide 2+  →  Conteúdo     (ilimitados, reordenáveis)
 | 💡 Destaque | Card com borda lateral colorida. Suporta destaque inline com `==palavra==` |
 | ⚠️ Dica | Com ícone e label personalizáveis |
 | ⚖️ Comparar | N colunas expansíveis, layout wrap centralizado |
-| 💻 Código | Syntax highlighting — 21 linguagens |
+| 💻 Código | Syntax highlighting — 22 linguagens |
 | 🗂️ Tabela | Tabela com N colunas e linhas dinâmicas, estilizada com as cores do tema |
 | 🖼️ Imagem | Posicionamento livre no slide com mini-canvas de drag, resize e rotação |
 | ─ Divisor | Separador decorativo com label opcional |
@@ -341,9 +341,11 @@ Os três templates usam as mesmas configurações visuais base, garantindo ident
 
 ### Syntax highlighting — linguagens suportadas
 
-Python · Java · Kotlin · JavaScript · TypeScript · C# · C/C++ · Go · Rust · PHP · Ruby · Swift · SQL · HTML · CSS · Terminal/Shell · YAML · JSON · XML · Dockerfile · Nginx · Gradle · Texto puro
+Python · Java · Kotlin · JavaScript · TypeScript · C# · C/C++ · Go · Rust · PHP · Ruby · Swift · SQL · HTML · CSS · Terminal/Shell · YAML · JSON · XML · Dockerfile · Nginx · Gradle · Terraform (HCL) · Texto puro
 
 > **Fix Java:** anotações como `@Override`, `@Autowired`, `@Entity` são corretamente coloridas sem quebrar o HTML do syntax highlighting.
+
+> **Terraform (HCL):** disponível nos três templates (`terraform` no seletor do YouTube). Colore tipos de bloco (`resource`, `variable`…), rótulos, atributos, strings com interpolação `${…}`, números e comentários.
 
 ### Ícone do handle — modos disponíveis
 
@@ -411,6 +413,11 @@ Cada arquivo é autossuficiente — não há dependências locais, pastas de ass
 ---
 
 ## Changelog
+
+### v5 — Terraform e exportação do texto em gradiente
+
+- **Linguagem Terraform (HCL)** no bloco Código dos três templates
+- **Handle do fechamento na exportação** — o html2canvas não suporta `background-clip:text` e exportava o handle como uma caixa de gradiente sólida; agora, só na cópia usada para exportar, o texto em gradiente é desenhado na cor principal da paleta (o preview mantém o gradiente)
 
 ### v4 — vídeo MP4 no Reel
 

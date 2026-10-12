@@ -905,6 +905,7 @@ const LANGS = [
   { id:'docker',  name:'Dockerfile',  icon:'🐳', color:'#38bdf8' },
   { id:'nginx',   name:'Nginx',       icon:'🔧', color:'#86efac' },
   { id:'gradle',  name:'Gradle',      icon:'🔨', color:'#fb923c' },
+  { id:'hcl',     name:'Terraform',   icon:'🟪', color:'#a78bfa' },
   { id:'plain',   name:'Texto puro',  icon:'📝', color:'#94a3b8' },
 ];
 
@@ -942,6 +943,17 @@ function highlight(code, lang) {
 
   let c = e(code);
   if (lang === 'plain') return c;
+
+  if (lang === 'hcl') {
+    // Terraform / HCL: cabeçalhos de bloco, atributos, strings com ${interpolação} e comentários
+    const str = s => s.split(/(\$\{[^}]*\})/).filter(Boolean).map(x => x.startsWith('${') ? w('d', x) : w('s', x)).join('');
+    return c.split('\n').map(line => {
+      const h = line.match(/^(\s*)([A-Za-z_][\w-]*)((?:\s+"[^"]*")*)(\s*\{\s*)$/);
+      if (h) return h[1] + w('k', h[2]) + h[3].replace(/"[^"]*"/g, m => w('t', m)) + h[4];
+      return line.replace(/(#.*$|\/\/.*$)|("(?:[^"\\]|\\.)*")|\b(true|false|null)\b|\b(\d+(?:\.\d+)?)\b|([A-Za-z_][\w-]*)(?=\s*=(?!=))/g,
+        (m, cm, st, kw, num, attr) => cm ? w('c', cm) : st ? str(st) : kw ? w('k', kw) : num ? w('n', num) : w('v', attr));
+    }).join('\n');
+  }
 
   if (lang === 'python') {
     const KW = /\b(def|class|import|from|as|return|if|elif|else|for|while|in|not|and|or|True|False|None|with|try|except|finally|raise|pass|break|continue|lambda|yield|async|await|global|nonlocal|del|is)\b/g;
@@ -2997,6 +3009,16 @@ function updateAcSummary(id) {
 }
 
 /* ══ EXPORT PNG ══ */
+/* html2canvas não suporta background-clip:text: na cópia exportada, texto em gradiente vira a cor principal */
+function solidGradientText(doc) {
+  doc.querySelectorAll('[style]').forEach(el => {
+    if (el.style.backgroundClip !== 'text' && el.style.webkitBackgroundClip !== 'text') return;
+    el.style.background = 'none';
+    el.style.webkitTextFillColor = activePalette.c1;
+    el.style.color = activePalette.c1;
+  });
+}
+
 async function exportAllSlides() {
   const btn      = document.getElementById('btnExport');
   const progress = document.getElementById('exportProgress');
@@ -3041,7 +3063,8 @@ async function exportAllSlides() {
     try {
       const canvas = await html2canvas(el, {
         scale: EXPORT_SCALE, useCORS: true, allowTaint: true,
-        backgroundColor: null, width: SLIDE_SIZE, height: SLIDE_SIZE, logging: false
+        backgroundColor: null, width: SLIDE_SIZE, height: SLIDE_SIZE, logging: false,
+        onclone: solidGradientText
       });
 
       if (dirHandle) {
